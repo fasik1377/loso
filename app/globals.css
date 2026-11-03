@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* Loso brand tokens. Use these utilities (bg-brand, text-ink, ...) instead of raw hex values. */
+@theme {
+  --color-brand: #123b32;
+  --color-brand-700: #0d2c25;
+  --color-brand-50: #e8f0ee;
+  --color-brand-100: #d0e1dc;
+  --color-gold: #f4b942;
+  --color-gold-600: #d99a1e;
+  --color-gold-50: #fef6e4;
+  --color-canvas: #f8faf8;
+  --color-ink: #263238;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-danger: #dc2626;
+  --color-success: #15803d;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid var(--color-gold-600);
+  outline-offset: 2px;
+}

@@ -1,0 +1,1107 @@
+// Loso data model.
+// Database: MongoDB (Prisma 6 MongoDB connector; requires a replica set, e.g. MongoDB Atlas).
+// Conventions: cuid string ids stored as _id, createdAt/updatedAt on mutable records, money as
+// integer minor units (santim) + explicit currency, and status enums for every workflow.
+// MongoDB note: a unique index treats every missing/null value as equal, so OPTIONAL fields are
+// never @unique here — uniqueness of e.g. User.email is enforced in application code.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Identity & access ─────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+  WORKER
+  CUSTOMER
+  EMPLOYER
+}
+
+/// Account lifecycle only. Payment and identity verification live in their own tables.
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum ContactVisibility {
+  HIDDEN
+  CONNECTIONS // people with an accepted service request / active application with this user
+  REGISTERED_USERS
+}
+
+model User {
+  id             String        @id @default(cuid()) @map("_id")
+  fullName       String
+  phone          String        @unique // E.164
+  email          String? // unique per user, enforced in application code
+  passwordHash   String
+  status         AccountStatus @default(PENDING)
+  statusReason   String?
+  locale         String        @default("en")
+  activatedAt    DateTime?
+  activatedById  String?
+  lastLoginAt    DateTime?
+  failedLogins   Int           @default(0)
+  lockedUntil    DateTime?
+  deletionRequestedAt DateTime?
+  /// Seeded sample data; always labelled "Demo" in the UI and never shown as verified.
+  isDemo         Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  activatedBy          User?                  @relation("ActivatedBy", fields: [activatedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  activatedUsers       User[]                 @relation("ActivatedBy")
+  roles                UserRole[]
+  sessions             Session[]
+  resetTokens          PasswordResetToken[]
+  profile              UserProfile?
+  workerProfile        WorkerProfile?
+  employerProfile      EmployerProfile?
+  ownedCompanies       Company[]              @relation("CompanyOwner")
+  companyMemberships   CompanyMember[]
+  files                StoredFile[]
+  resumes              Resume[]
+  applications         JobApplication[]
+  postedJobs           Job[]                  @relation("JobPostedBy")
+  customerRequests     ServiceRequest[]       @relation("CustomerRequests")
+  workerRequests       ServiceRequest[]       @relation("WorkerRequests")
+  reviewsWritten       Review[]               @relation("ReviewAuthor")
+  reviewsReceived      Review[]               @relation("ReviewSubject")
+  conversations        ConversationParticipant[]
+  messages             Message[]
+  notifications        Notification[]
+  notificationPrefs    NotificationPreference[]
+  registrationPayments RegistrationPayment[]  @relation("PaymentPayer")
+  reviewedPayments     RegistrationPayment[]  @relation("PaymentReviewer")
+  transactions         PaymentTransaction[]
+  verifications        VerificationSubmission[] @relation("VerificationSubject")
+  reviewedVerifications VerificationSubmission[] @relation("VerificationReviewer")
+  advertisements       Advertisement[]        @relation("AdOwner")
+  reportsFiled         Report[]               @relation("ReportReporter")
+  reportsResolved      Report[]               @relation("ReportResolver")
+  auditLogs            AuditLog[]
+  applicationEvents    ApplicationEvent[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
+}
+
+model UserRole {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  role      Role
+  grantedById String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([role])
+}
+
+model Session {
+  id         String   @id @default(cuid()) @map("_id")
+  tokenHash  String   @unique // sha256 of the cookie token; raw token never stored
+  userId     String
+  expiresAt  DateTime
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid()) @map("_id")
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Fixed-window rate limit counters (DB-backed so limits hold across server instances).
+model RateLimitBucket {
+  key     String   @id @map("_id")
+  count   Int
+  resetAt DateTime
+}
+
+// ───────────────────────────── Locations & taxonomy ─────────────────────────────
+
+enum LocationType {
+  CITY
+  SUB_CITY
+  NEIGHBORHOOD
+}
+
+model Location {
+  id        String       @id @default(cuid()) @map("_id")
+  name      String
+  slug      String       @unique
+  type      LocationType
+  parentId  String?
+  sortOrder Int          @default(0)
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+
+  parent          Location?        @relation("LocationTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children        Location[]       @relation("LocationTree")
+  serviceAreas    ServiceArea[]
+  jobs            Job[]
+  serviceRequests ServiceRequest[]
+  profiles        UserProfile[]
+  companies       Company[]
+
+  @@index([parentId])
+}
+
+model ServiceCategory {
+  id          String   @id @default(cuid()) @map("_id")
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String? // lucide icon name
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workerServices  WorkerService[]
+  serviceRequests ServiceRequest[]
+
+  @@index([active, sortOrder])
+}
+
+model JobCategory {
+  id        String   @id @default(cuid()) @map("_id")
+  name      String
+  slug      String   @unique
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  jobs Job[]
+}
+
+model Skill {
+  id        String   @id @default(cuid()) @map("_id")
+  name      String
+  slug      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  workers WorkerSkill[]
+  jobs    JobSkill[]
+}
+
+// ───────────────────────────── Files ─────────────────────────────
+
+enum FileVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum FilePurpose {
+  AVATAR
+  PORTFOLIO
+  CERTIFICATE
+  ID_DOCUMENT
+  RESUME
+  PAYMENT_PROOF
+  SERVICE_REQUEST_PHOTO
+  COMPANY_LOGO
+  COMPANY_DOCUMENT
+  AD_BANNER
+}
+
+/// File metadata only; bytes live in the configured storage driver under `storageKey`.
+model StoredFile {
+  id           String         @id @default(cuid()) @map("_id")
+  ownerId      String
+  storageKey   String         @unique
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  visibility   FileVisibility @default(PRIVATE)
+  purpose      FilePurpose
+  createdAt    DateTime       @default(now())
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  avatarFor        UserProfile[]
+  portfolioItems   PortfolioItem[]
+  resumes          Resume[]
+  serviceAttachments ServiceRequestAttachment[]
+  verificationDocs VerificationDocument[]
+  companyLogos     Company[]
+  ads              Advertisement[]
+  transactions     PaymentTransaction[]
+
+  @@index([ownerId, purpose])
+}
+
+// ───────────────────────────── Profiles ─────────────────────────────
+
+model UserProfile {
+  id                String            @id @default(cuid()) @map("_id")
+  userId            String            @unique
+  bio               String?
+  avatarFileId      String?
+  locationId        String?
+  languages         String[]          @default([])
+  phoneVisibility   ContactVisibility @default(CONNECTIONS)
+  emailVisibility   ContactVisibility @default(HIDDEN)
+  updatedAt         DateTime          @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatar   StoredFile? @relation(fields: [avatarFileId], references: [id], onDelete: SetNull)
+  location Location?   @relation(fields: [locationId], references: [id], onDelete: SetNull)
+}
+
+enum Availability {
+  AVAILABLE
+  BUSY
+  UNAVAILABLE
+}
+
+enum PricingMethod {
+  HOURLY
+  DAILY
+  PER_JOB
+  NEGOTIABLE
+}
+
+model WorkerProfile {
+  id                  String        @id @default(cuid()) @map("_id")
+  userId              String        @unique
+  headline            String?
+  seeksJobs           Boolean       @default(true)
+  offersServices      Boolean       @default(false)
+  yearsExperience     Int?
+  experienceSummary   String?
+  qualifications      String?
+  availability        Availability  @default(AVAILABLE)
+  availabilityNote    String?
+  pricingMethod       PricingMethod @default(NEGOTIABLE)
+  priceMinMinor       Int?
+  priceMaxMinor       Int?
+  currency            String        @default("ETB")
+  // Denormalized aggregates; recomputed server-side from valid reviews / completed requests only.
+  ratingAverage       Float?
+  ratingCount         Int           @default(0)
+  completedCount      Int           @default(0)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills    WorkerSkill[]
+  services  WorkerService[]
+  areas     ServiceArea[]
+  portfolio PortfolioItem[]
+
+  @@index([offersServices, availability])
+}
+
+model WorkerSkill {
+  id String @id @default(cuid()) @map("_id")
+  workerId String
+  skillId  String
+
+  worker WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  skill  Skill         @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([workerId, skillId])
+}
+
+model WorkerService {
+  id            String        @id @default(cuid()) @map("_id")
+  workerId      String
+  categoryId    String
+  title         String
+  description   String?
+  pricingMethod PricingMethod @default(NEGOTIABLE)
+  priceMinMinor Int?
+  priceMaxMinor Int?
+  currency      String        @default("ETB")
+  active        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  worker   WorkerProfile   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  category ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([workerId, categoryId])
+  @@index([categoryId, active])
+}
+
+model ServiceArea {
+  id String @id @default(cuid()) @map("_id")
+  workerId   String
+  locationId String
+
+  worker   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  location Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([workerId, locationId])
+  @@index([locationId])
+}
+
+model PortfolioItem {
+  id          String   @id @default(cuid()) @map("_id")
+  workerId    String
+  title       String
+  description String?
+  fileId      String
+  createdAt   DateTime @default(now())
+
+  worker WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  file   StoredFile    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([workerId])
+}
+
+enum EmployerType {
+  INDIVIDUAL
+  COMPANY
+}
+
+model EmployerProfile {
+  id           String       @id @default(cuid()) @map("_id")
+  userId       String       @unique
+  employerType EmployerType @default(COMPANY)
+  positionTitle String?
+  createdAt    DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CompanyStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+model Company {
+  id           String        @id @default(cuid()) @map("_id")
+  ownerId      String
+  name         String
+  slug         String        @unique
+  logoFileId   String?
+  description  String?
+  industry     String?
+  address      String?
+  locationId   String?
+  phone        String?
+  email        String?
+  website      String?
+  status       CompanyStatus @default(PENDING_REVIEW)
+  statusReason String?
+  verifiedAt   DateTime?
+  verifiedById String?
+  isDemo       Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  owner         User                     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  logo          StoredFile?              @relation(fields: [logoFileId], references: [id], onDelete: SetNull)
+  location      Location?                @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  members       CompanyMember[]
+  jobs          Job[]
+  verifications VerificationSubmission[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+enum CompanyMemberRole {
+  OWNER
+  RECRUITER
+}
+
+model CompanyMember {
+  id String @id @default(cuid()) @map("_id")
+  companyId String
+  userId    String
+  role      CompanyMemberRole @default(RECRUITER)
+  createdAt DateTime          @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+}
+
+// ───────────────────────────── Jobs ─────────────────────────────
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERNSHIP
+  VOLUNTEER
+  DAILY_LABOR
+}
+
+enum ExperienceLevel {
+  ENTRY
+  JUNIOR
+  MID
+  SENIOR
+  MANAGER
+}
+
+enum WorkplaceType {
+  ON_SITE
+  REMOTE
+  HYBRID
+}
+
+enum ApplicationMethod {
+  IN_APP
+  EMAIL
+  EXTERNAL_URL
+}
+
+enum JobStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  PAUSED
+  CLOSED
+  REJECTED
+  REMOVED
+}
+
+model Job {
+  id                String            @id @default(cuid()) @map("_id")
+  companyId         String
+  postedById        String
+  categoryId        String?
+  title             String
+  description       String
+  responsibilities  String?
+  qualifications    String?
+  employmentType    EmploymentType
+  experienceLevel   ExperienceLevel   @default(ENTRY)
+  workplaceType     WorkplaceType     @default(ON_SITE)
+  locationId        String?
+  salaryMinMinor    Int?
+  salaryMaxMinor    Int?
+  currency          String            @default("ETB")
+  salaryVisible     Boolean           @default(true)
+  vacancies         Int               @default(1)
+  deadline          DateTime?
+  applicationMethod ApplicationMethod @default(IN_APP)
+  applicationEmail  String?
+  applicationUrl    String?
+  status            JobStatus         @default(DRAFT)
+  moderationNote    String?
+  isFeatured        Boolean           @default(false)
+  featuredUntil     DateTime?
+  publishedAt       DateTime?
+  closedAt          DateTime?
+  viewCount         Int               @default(0)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  postedBy     User             @relation("JobPostedBy", fields: [postedById], references: [id], onDelete: Restrict)
+  category     JobCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  location     Location?        @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  skills       JobSkill[]
+  questions    JobQuestion[]
+  applications JobApplication[]
+
+  @@index([status, publishedAt])
+  @@index([companyId, status])
+  @@index([categoryId])
+  @@index([deadline])
+}
+
+model JobSkill {
+  id String @id @default(cuid()) @map("_id")
+  jobId   String
+  skillId String
+
+  job   Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, skillId])
+}
+
+model JobQuestion {
+  id        String  @id @default(cuid()) @map("_id")
+  jobId     String
+  prompt    String
+  required  Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
+
+model Resume {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  fileId    String
+  title     String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  file         StoredFile       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  applications JobApplication[]
+
+  @@index([userId])
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  HIRED
+  REJECTED
+  WITHDRAWN
+}
+
+model JobApplication {
+  id          String            @id @default(cuid()) @map("_id")
+  jobId       String
+  applicantId String
+  resumeId    String?
+  coverLetter String?
+  answers     Json? // [{ questionId, prompt, answer }]
+  status      ApplicationStatus @default(SUBMITTED)
+  interviewAt DateTime?
+  interviewDetails String?
+  employerNote String? // private to employer
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  job          Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicant    User               @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  resume       Resume?            @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  events        ApplicationEvent[]
+  conversations Conversation[]
+
+  @@unique([jobId, applicantId]) // duplicate-application prevention
+  @@index([applicantId])
+  @@index([jobId, status])
+}
+
+model ApplicationEvent {
+  id            String             @id @default(cuid()) @map("_id")
+  applicationId String
+  actorId       String?
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  note          String?
+  createdAt     DateTime           @default(now())
+
+  application JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  actor       User?          @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([applicationId])
+}
+
+// ───────────────────────────── Services ─────────────────────────────
+
+enum ServiceRequestStatus {
+  REQUESTED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  DECLINED
+  CANCELLED
+}
+
+model ServiceRequest {
+  id               String               @id @default(cuid()) @map("_id")
+  customerId       String
+  workerId         String
+  categoryId       String
+  title            String
+  description      String
+  preferredAt      DateTime?
+  locationId       String?
+  addressDetail    String?
+  budgetMinor      Int?
+  currency         String               @default("ETB")
+  status           ServiceRequestStatus @default(REQUESTED)
+  acceptedAt       DateTime?
+  startedAt        DateTime?
+  workerFinishedAt DateTime? // worker reports work done; customer must still confirm
+  completedAt      DateTime?
+  declinedAt       DateTime?
+  declineReason    String?
+  cancelledAt      DateTime?
+  cancelledById    String?
+  cancelReason     String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  customer     User                       @relation("CustomerRequests", fields: [customerId], references: [id], onDelete: Cascade)
+  worker       User                       @relation("WorkerRequests", fields: [workerId], references: [id], onDelete: Cascade)
+  category     ServiceCategory            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  location     Location?                  @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  attachments  ServiceRequestAttachment[]
+  review        Review?
+  conversations Conversation[]
+
+  @@index([customerId, status])
+  @@index([workerId, status])
+}
+
+model ServiceRequestAttachment {
+  id        String   @id @default(cuid()) @map("_id")
+  requestId String
+  fileId    String
+  createdAt DateTime @default(now())
+
+  request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  file    StoredFile     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+}
+
+enum ReviewStatus {
+  VISIBLE
+  HIDDEN
+}
+
+model Review {
+  id               String       @id @default(cuid()) @map("_id")
+  serviceRequestId String       @unique // one review per completed request
+  authorId         String
+  subjectId        String
+  rating           Int // 1..5, enforced by validation in reviewSchema + createReview
+  comment          String?
+  status           ReviewStatus @default(VISIBLE)
+  hiddenReason     String?
+  hiddenById       String?
+  hiddenAt         DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  author         User           @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  subject        User           @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([subjectId, status])
+}
+
+// ───────────────────────────── Messaging ─────────────────────────────
+
+model Conversation {
+  id               String    @id @default(cuid()) @map("_id")
+  serviceRequestId String? // at most one per request, enforced in ensureConversation()
+  jobApplicationId String? // at most one per application, enforced in ensureConversation()
+  lastMessageAt    DateTime?
+  createdAt        DateTime  @default(now())
+
+  serviceRequest ServiceRequest?           @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+  jobApplication JobApplication?           @relation(fields: [jobApplicationId], references: [id], onDelete: SetNull)
+  participants   ConversationParticipant[]
+  messages       Message[]
+
+  @@index([lastMessageAt])
+  @@index([serviceRequestId])
+  @@index([jobApplicationId])
+}
+
+model ConversationParticipant {
+  id String @id @default(cuid()) @map("_id")
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?
+  joinedAt       DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String    @id @default(cuid()) @map("_id")
+  conversationId String
+  senderId       String
+  body           String
+  hiddenAt       DateTime? // set by moderators after a report
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+// ───────────────────────────── Notifications ─────────────────────────────
+
+enum NotificationType {
+  ACCOUNT
+  PAYMENT
+  APPLICATION
+  SERVICE_REQUEST
+  MESSAGE
+  REVIEW
+  JOB
+  ADVERTISEMENT
+  ANNOUNCEMENT
+}
+
+model Notification {
+  id        String           @id @default(cuid()) @map("_id")
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+model NotificationPreference {
+  id String @id @default(cuid()) @map("_id")
+  userId String
+  type   NotificationType
+  inApp  Boolean          @default(true)
+  email  Boolean          @default(false)
+  sms    Boolean          @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+}
+
+model Announcement {
+  id        String    @id @default(cuid()) @map("_id")
+  title     String
+  body      String
+  active    Boolean   @default(true)
+  startsAt  DateTime  @default(now())
+  endsAt    DateTime?
+  createdById String?
+  createdAt DateTime  @default(now())
+}
+
+// ───────────────────────────── Registration, payment, verification ─────────────────────────────
+
+enum RegistrationPaymentStatus {
+  AWAITING_PAYMENT
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  WAIVED
+}
+
+/// One registration fee obligation per worker. Amount is captured from settings at creation.
+model RegistrationPayment {
+  id            String                    @id @default(cuid()) @map("_id")
+  userId        String                    @unique
+  amountMinor   Int
+  currency      String                    @default("ETB")
+  status        RegistrationPaymentStatus @default(AWAITING_PAYMENT)
+  receiptNumber String? // derived from the (unique) payment id
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  user         User                 @relation("PaymentPayer", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy   User?                @relation("PaymentReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  transactions PaymentTransaction[]
+
+  @@index([status])
+}
+
+enum PaymentPurpose {
+  REGISTRATION
+  ADVERTISEMENT
+}
+
+enum TransactionStatus {
+  SUBMITTED // manual proof submitted, awaiting staff check
+  PENDING // provider initiated, awaiting callback/verification
+  SUCCEEDED
+  FAILED
+  REJECTED
+}
+
+model PaymentTransaction {
+  id                    String            @id @default(cuid()) @map("_id")
+  userId                String
+  purpose               PaymentPurpose
+  registrationPaymentId String?
+  advertisementId       String?
+  provider              String // "manual", later "chapa", "telebirr"
+  method                String? // e.g. "bank_transfer", "telebirr_wallet"
+  idempotencyKey        String            @unique
+  providerReference     String // payer-supplied (manual) or provider transaction reference
+  amountMinor           Int
+  currency              String            @default("ETB")
+  status                TransactionStatus
+  proofFileId           String?
+  failureReason         String?
+  providerPayload       Json? // sanitized; never card data or secrets
+  verifiedAt            DateTime?
+  verifiedById          String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registrationPayment RegistrationPayment? @relation(fields: [registrationPaymentId], references: [id], onDelete: SetNull)
+  advertisement       Advertisement?       @relation(fields: [advertisementId], references: [id], onDelete: SetNull)
+  proofFile           StoredFile?          @relation(fields: [proofFileId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, providerReference]) // a reference can only ever be claimed once
+  @@index([registrationPaymentId])
+  @@index([status])
+}
+
+enum VerificationStatus {
+  SUBMITTED
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum DocumentKind {
+  NATIONAL_ID
+  KEBELE_ID
+  PASSPORT
+  DRIVING_LICENSE
+  CERTIFICATE
+  BUSINESS_LICENSE
+  TAX_REGISTRATION
+  OTHER
+}
+
+model VerificationSubmission {
+  id               String             @id @default(cuid()) @map("_id")
+  userId           String
+  companyId        String?
+  status           VerificationStatus @default(SUBMITTED)
+  applicantNote    String?
+  reviewerNote     String? // reason for decision / requested changes; shown to applicant
+  reviewedById     String?
+  reviewedAt       DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  user       User                   @relation("VerificationSubject", fields: [userId], references: [id], onDelete: Cascade)
+  company    Company?               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  reviewedBy User?                  @relation("VerificationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  documents  VerificationDocument[]
+
+  @@index([status])
+  @@index([userId])
+}
+
+model VerificationDocument {
+  id           String       @id @default(cuid()) @map("_id")
+  submissionId String
+  fileId       String
+  kind         DocumentKind
+
+  submission VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  file       StoredFile             @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+// ───────────────────────────── Advertising ─────────────────────────────
+
+enum AdStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAUSED
+}
+
+enum AdPlacementSlot {
+  HOME
+  JOBS
+  SERVICES
+  WORKER_PROFILE
+}
+
+/// Moderation status is stored; Scheduled/Active/Expired are derived from dates for APPROVED ads.
+model Advertisement {
+  id             String   @id @default(cuid()) @map("_id")
+  ownerId        String
+  businessName   String
+  contactPhone   String?
+  contactEmail   String?
+  title          String
+  body           String?
+  imageFileId    String?
+  destinationUrl String?
+  startsAt       DateTime
+  endsAt         DateTime
+  status         AdStatus @default(PENDING)
+  moderationNote String?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  isPaid         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  owner        User                    @relation("AdOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  image        StoredFile?             @relation(fields: [imageFileId], references: [id], onDelete: SetNull)
+  placements   AdvertisementPlacement[]
+  events       AdvertisementEvent[]
+  transactions PaymentTransaction[]
+
+  @@index([status, startsAt, endsAt])
+}
+
+model AdvertisementPlacement {
+  id String @id @default(cuid()) @map("_id")
+  advertisementId String
+  slot            AdPlacementSlot
+
+  advertisement Advertisement @relation(fields: [advertisementId], references: [id], onDelete: Cascade)
+
+  @@unique([advertisementId, slot])
+  @@index([slot])
+}
+
+enum AdEventType {
+  IMPRESSION
+  CLICK
+}
+
+model AdvertisementEvent {
+  id              String          @id @default(cuid()) @map("_id")
+  advertisementId String
+  type            AdEventType
+  slot            AdPlacementSlot
+  createdAt       DateTime        @default(now())
+
+  advertisement Advertisement @relation(fields: [advertisementId], references: [id], onDelete: Cascade)
+
+  @@index([advertisementId, type, createdAt])
+}
+
+// ───────────────────────────── Trust & safety, audit, settings ─────────────────────────────
+
+enum ReportTarget {
+  USER
+  JOB
+  REVIEW
+  MESSAGE
+  ADVERTISEMENT
+  SERVICE_REQUEST
+  COMPANY
+}
+
+enum ReportReason {
+  FRAUD
+  ABUSE
+  HARASSMENT
+  INAPPROPRIATE
+  SPAM
+  UNSAFE
+  FAKE_PROFILE
+  DISPUTE
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id           String       @id @default(cuid()) @map("_id")
+  reporterId   String
+  targetType   ReportTarget
+  targetId     String
+  reason       ReportReason
+  details      String?
+  status       ReportStatus @default(OPEN)
+  resolution   String?
+  resolvedById String?
+  resolvedAt   DateTime?
+  createdAt    DateTime     @default(now())
+
+  reporter   User  @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy User? @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+}
+
+model SupportRequest {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String?
+  name      String
+  contact   String
+  subject   String
+  message   String
+  status    ReportStatus @default(OPEN)
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid()) @map("_id")
+  actorId    String?
+  action     String // e.g. "user.activate", "payment.verify"
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+model PlatformSetting {
+  key         String   @id @map("_id")
+  value       Json
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
