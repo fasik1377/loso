@@ -24,7 +24,7 @@ export interface JobCardData {
 export function JobCard({ job }: { job: JobCardData }) {
   const salary = job.salaryVisible ? formatRange(job.salaryMinMinor, job.salaryMaxMinor, job.currency) : null;
   return (
-    <Card className="relative flex flex-col p-5 transition-shadow hover:shadow-md">
+    <Card className="relative flex flex-col p-5 transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lg">
       <div className="flex items-start gap-3">
         <Avatar name={job.company.name} src={fileUrl(job.company.logoFileId)} size={44} />
         <div className="min-w-0 flex-1">
@@ -81,7 +81,7 @@ export function WorkerCard({ worker }: { worker: WorkerCardData }) {
   const avg = worker.ratingAverage;
   const price = formatRange(worker.priceMinMinor, worker.priceMaxMinor, worker.currency);
   return (
-    <Card className="relative flex flex-col p-5 transition-shadow hover:shadow-md">
+    <Card className="relative flex flex-col p-5 transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lg">
       <div className="flex items-start gap-3">
         <Avatar name={worker.user.fullName} src={fileUrl(worker.user.profile?.avatarFileId)} size={52} />
         <div className="min-w-0 flex-1">

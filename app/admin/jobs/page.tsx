@@ -61,7 +61,7 @@ export default async function AdminJobsPage({ searchParams }: PageProps<"/admin/
       <PageHeader title="Jobs & companies" description="Approve, remove or feature job posts and manage employer companies." />
 
       <SectionTitle title={`Jobs (${jobTotal})`} />
-      <form method="get" className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-white p-4" aria-label="Filter jobs">
+      <form method="get" className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-card p-4" aria-label="Filter jobs">
         <FilterField label="Search" className="flex-1">
           <input name="q" defaultValue={q} placeholder="Job title or company" className={adminInput} />
         </FilterField>
@@ -137,7 +137,7 @@ export default async function AdminJobsPage({ searchParams }: PageProps<"/admin/
         title={`Companies (${companyTotal})`}
         description="New companies are approved through the verification queue. Suspending a company pauses its published jobs."
       />
-      <form method="get" className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-white p-4" aria-label="Filter companies">
+      <form method="get" className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-card p-4" aria-label="Filter companies">
         <FilterField label="Company name" className="flex-1">
           <input name="cq" defaultValue={cq} placeholder="Search companies" className={adminInput} />
         </FilterField>

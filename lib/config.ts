@@ -12,8 +12,8 @@ export const marketConfig = {
   /** Currency minor units per major unit (1 Birr = 100 santim). */
   currencyMinorUnits: 100,
   locale: "en-ET",
-  supportedLocales: ["en"] as const,
-  plannedLocales: ["am", "sid"] as const,
+  supportedLocales: ["en", "am"] as const,
+  plannedLocales: ["sid"] as const,
   phone: {
     countryCode: "251",
     /** National significant number length (without the trunk 0). */

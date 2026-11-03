@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -9,7 +12,8 @@ import { RegisterForm } from "./register-form";
 
 export const metadata: Metadata = { title: "Create an account" };
 
-export default async function RegisterPage({ searchParams }: PageProps<"/register">) {
+async function RegisterPageContent({ searchParams }: PageProps<"/register">) {
+  await connection(); // live data: render per request
   const [user, sp] = await Promise.all([getCurrentUser(), searchParams]);
   if (user) redirect(homePathFor(user));
   const type = str(sp, "type");
@@ -26,5 +30,14 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
         </CardBody>
       </Card>
     </div>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function RegisterPage(props: PageProps<"/register">) {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <RegisterPageContent {...props} />
+    </Suspense>
   );
 }

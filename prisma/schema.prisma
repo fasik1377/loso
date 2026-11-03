@@ -79,6 +79,7 @@ model User {
   workerRequests       ServiceRequest[]       @relation("WorkerRequests")
   reviewsWritten       Review[]               @relation("ReviewAuthor")
   reviewsReceived      Review[]               @relation("ReviewSubject")
+  companyReviews       CompanyReview[]
   conversations        ConversationParticipant[]
   messages             Message[]
   notifications        Notification[]
@@ -423,10 +424,15 @@ model Company {
   verifiedAt   DateTime?
   verifiedById String?
   isDemo       Boolean       @default(false)
+  // Denormalized from visible CompanyReviews (written only by hired candidates).
+  ratingAverage Float?
+  ratingCount   Int          @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   owner         User                     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  reviews       CompanyReview[]
+  advertisements Advertisement[]
   logo          StoredFile?              @relation(fields: [logoFileId], references: [id], onDelete: SetNull)
   location      Location?                @relation(fields: [locationId], references: [id], onDelete: SetNull)
   members       CompanyMember[]
@@ -536,6 +542,7 @@ model Job {
   skills       JobSkill[]
   questions    JobQuestion[]
   applications JobApplication[]
+  advertisements Advertisement[]
 
   @@index([status, publishedAt])
   @@index([companyId, status])
@@ -611,6 +618,7 @@ model JobApplication {
   resume       Resume?            @relation(fields: [resumeId], references: [id], onDelete: SetNull)
   events        ApplicationEvent[]
   conversations Conversation[]
+  companyReview CompanyReview?
 
   @@unique([jobId, applicantId]) // duplicate-application prevention
   @@index([applicantId])
@@ -716,6 +724,28 @@ model Review {
   subject        User           @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@index([subjectId, status])
+}
+
+/// Employer feedback: only a candidate whose application was HIRED may review that company, once.
+model CompanyReview {
+  id            String       @id @default(cuid()) @map("_id")
+  applicationId String       @unique
+  companyId     String
+  authorId      String
+  rating        Int // 1..5, enforced by validation
+  comment       String?
+  status        ReviewStatus @default(VISIBLE)
+  hiddenReason  String?
+  hiddenById    String?
+  hiddenAt      DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  application JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
 }
 
 // ───────────────────────────── Messaging ─────────────────────────────
@@ -979,16 +1009,26 @@ model Advertisement {
   reviewedById   String?
   reviewedAt     DateTime?
   isPaid         Boolean  @default(true)
+  /// Optional job this ad promotes ("Sponsored job"); shown with a link to the job.
+  jobId          String?
+  companyId      String?
+  /// Fee charged for the placement (minor units). Recorded by staff; payment kept in PaymentTransaction.
+  chargeMinor    Int?
+  currency       String   @default("ETB")
+  postedByStaff  Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   owner        User                    @relation("AdOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   image        StoredFile?             @relation(fields: [imageFileId], references: [id], onDelete: SetNull)
+  job          Job?                    @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  company      Company?                @relation(fields: [companyId], references: [id], onDelete: SetNull)
   placements   AdvertisementPlacement[]
   events       AdvertisementEvent[]
   transactions PaymentTransaction[]
 
   @@index([status, startsAt, endsAt])
+  @@index([jobId])
 }
 
 model AdvertisementPlacement {

@@ -106,7 +106,7 @@ export function ChatWindow({ conversationId, currentUserId, initial }: { convers
           const mine = m.senderId === currentUserId;
           return (
             <div key={m.id} className={cx("group flex", mine ? "justify-end" : "justify-start")}>
-              <div className={cx("max-w-[80%] rounded-2xl px-4 py-2 text-sm", mine ? "bg-brand text-white" : "bg-canvas text-ink", m.hidden && "italic opacity-70")}>
+              <div className={cx("max-w-[80%] rounded-2xl px-4 py-2 text-sm", mine ? "bg-brand text-on-brand" : "bg-canvas text-ink", m.hidden && "italic opacity-70")}>
                 <p className="whitespace-pre-wrap break-words">{m.hidden ? m.body : <Linkified text={m.body} />}</p>
                 <p className={cx("mt-1 text-[10px]", mine ? "text-white/70" : "text-muted")}>
                   {new Date(m.createdAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}
@@ -145,7 +145,7 @@ export function ChatWindow({ conversationId, currentUserId, initial }: { convers
           placeholder="Write a message…"
           className="max-h-32 min-h-10 flex-1 resize-none rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
-        <button type="submit" disabled={pending || !draft.trim()} className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand text-white disabled:opacity-50" aria-label="Send">
+        <button type="submit" disabled={pending || !draft.trim()} className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand text-on-brand disabled:opacity-50" aria-label="Send">
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>
       </form>

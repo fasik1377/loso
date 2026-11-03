@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma";
 import { buildQuery, int, str } from "@/lib/search-params";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { moderateReviewAction } from "@/lib/actions/admin";
+import { moderateCompanyReviewAction, moderateReviewAction } from "@/lib/actions/admin";
 import { Badge, EmptyState, PageHeader, Pagination, Table, cx } from "@/components/ui/primitives";
 import { StatusBadge, Stars } from "@/components/ui/status";
 import { ActionButton, ReasonForm } from "@/components/admin/action-forms";
@@ -68,14 +68,14 @@ export default async function AdminReviewsPage({ searchParams }: PageProps<"/adm
             key={t.label}
             href={`/admin/reviews${buildQuery(sp, { status: t.value, page: undefined })}`}
             aria-current={status === t.value ? "page" : undefined}
-            className={cx("rounded-full border px-3 py-1 text-sm font-medium", status === t.value ? "border-brand bg-brand text-white" : "border-line bg-white text-ink hover:bg-brand-50")}
+            className={cx("rounded-full border px-3 py-1 text-sm font-medium", status === t.value ? "border-brand bg-brand text-on-brand" : "border-line bg-card text-ink hover:bg-brand-50")}
           >
             {t.label}
           </Link>
         ))}
         <Link
           href={`/admin/reviews${buildQuery(sp, { reported: reported ? undefined : "1", page: undefined })}`}
-          className={cx("rounded-full border px-3 py-1 text-sm font-medium", reported ? "border-danger bg-danger text-white" : "border-line bg-white text-ink hover:bg-brand-50")}
+          className={cx("rounded-full border px-3 py-1 text-sm font-medium", reported ? "border-danger bg-danger text-white" : "border-line bg-card text-ink hover:bg-brand-50")}
         >
           With open reports
         </Link>
@@ -136,6 +136,48 @@ export default async function AdminReviewsPage({ searchParams }: PageProps<"/adm
         </Table>
       )}
       <Pagination page={page} pages={pages} hrefFor={(p) => `/admin/reviews${buildQuery(sp, { page: p })}`} />
+      <EmployerReviews />
     </div>
+  );
+}
+
+/** Reviews of employers written by hired candidates. */
+async function EmployerReviews() {
+  const reviews = await db.companyReview.findMany({
+    include: { author: { select: { id: true, fullName: true } }, company: { select: { id: true, name: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+  return (
+    <section className="mt-10">
+      <h2 className="mb-3 text-lg font-semibold text-ink">Employer reviews (latest 50)</h2>
+      {reviews.length === 0 ? (
+        <EmptyState title="No employer reviews yet" />
+      ) : (
+        <Table>
+          <thead>
+            <tr><th>Rating</th><th>Comment</th><th>Employer</th><th>Author</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {reviews.map((r) => (
+              <tr key={r.id}>
+                <td><Stars value={r.rating} /><p className="text-xs text-muted">{formatDate(r.createdAt)}</p></td>
+                <td className="max-w-sm text-sm">{r.comment ?? <span className="text-muted">—</span>}{r.hiddenReason && <p className="text-xs text-muted">Hidden: {r.hiddenReason}</p>}</td>
+                <td><Link href={`/companies/${r.company.id}`} className="hover:underline">{r.company.name}</Link></td>
+                <td><Link href={`/admin/users/${r.author.id}`} className="hover:underline">{r.author.fullName}</Link></td>
+                <td><StatusBadge status={r.status} /></td>
+                <td>
+                  {r.status === "VISIBLE" ? (
+                    <ReasonForm action={moderateCompanyReviewAction} fields={{ id: r.id, hide: "1" }} label="Hide" />
+                  ) : (
+                    <ActionButton action={moderateCompanyReviewAction} fields={{ id: r.id, hide: "0" }} label="Restore" />
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+    </section>
   );
 }

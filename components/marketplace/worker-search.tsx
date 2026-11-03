@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Users } from "lucide-react";
 import { searchWorkers } from "@/lib/services/workers";
 import { areaLocations, serviceCategories } from "@/lib/services/taxonomy";
@@ -23,7 +24,7 @@ export async function WorkerSearchView({ sp, basePath, fixedCategory }: { sp: SP
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-      <form method="get" action={basePath} className="space-y-4 self-start rounded-xl border border-line bg-white p-4" aria-label="Filter workers">
+      <form method="get" action={basePath} className="space-y-4 self-start rounded-xl border border-line bg-card p-4" aria-label="Filter workers">
         <Filter label="Search">
           <input name="q" defaultValue={filters.q} placeholder="Name, service or skill" className={inputClass} />
         </Filter>
@@ -51,16 +52,16 @@ export async function WorkerSearchView({ sp, basePath, fixedCategory }: { sp: SP
           <input name="maxPrice" type="number" min={0} step={50} defaultValue={int(sp, "maxPrice")} className={inputClass} />
         </Filter>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="available" value="1" defaultChecked={filters.available} className="h-4 w-4 accent-[#123B32]" />
+          <input type="checkbox" name="available" value="1" defaultChecked={filters.available} className="h-4 w-4 accent-[#182B43]" />
           Available now
         </label>
         <div className="flex gap-2">
           <button className={buttonClass("primary", "md", "flex-1")}>Apply filters</button>
-          <a href={basePath} className={buttonClass("outline", "md")}>Reset</a>
+          <Link href={basePath} className={buttonClass("outline", "md")}>Reset</Link>
         </div>
       </form>
       <div>
-        <AdSlot slot="SERVICES" className="mb-6" />
+        <AdSlot slot="SERVICES" className="mb-8" title="Sponsored" />
         <p className="mb-3 text-sm text-muted">{result.total} {result.total === 1 ? "worker" : "workers"} found</p>
         {result.workers.length === 0 ? (
           <EmptyState icon={<Users className="h-8 w-8" />} title="No workers match your search" description="Try a different area or remove some filters." />

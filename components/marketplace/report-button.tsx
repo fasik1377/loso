@@ -23,7 +23,7 @@ export function ReportButton({ targetType, targetId, label = "Report" }: { targe
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-muted hover:text-danger">
         <Flag className="h-4 w-4" aria-hidden="true" /> {label}
       </summary>
-      <div className="mt-3 rounded-lg border border-line bg-white p-4">
+      <div className="mt-3 rounded-lg border border-line bg-card p-4">
         <ActionForm action={reportAction} resetOnSuccess>
           <input type="hidden" name="targetType" value={targetType} />
           <input type="hidden" name="targetId" value={targetId} />

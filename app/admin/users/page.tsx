@@ -67,7 +67,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
     <div>
       <PageHeader title="Users" description={`${total} ${total === 1 ? "account" : "accounts"} match the current filters.`} />
 
-      <form method="get" className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-white p-4" aria-label="Filter users">
+      <form method="get" className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-card p-4" aria-label="Filter users">
         <FilterField label="Search" className="flex-1">
           <input name="q" defaultValue={q} placeholder="Name, phone or email" className={adminInput} />
         </FilterField>
@@ -85,7 +85,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
         </FilterField>
         <div className="flex gap-2">
           <button className={buttonClass("primary", "md")}>Apply</button>
-          <a href="/admin/users" className={buttonClass("outline", "md")}>Reset</a>
+          <Link href="/admin/users" className={buttonClass("outline", "md")}>Reset</Link>
         </div>
       </form>
 

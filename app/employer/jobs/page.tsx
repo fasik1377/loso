@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireRolePage } from "@/lib/auth/guards";
 import { db } from "@/lib/db";
 import { getEmployerCompany } from "@/lib/services/jobs";
-import { employerCanSetJobStatus } from "@/lib/domain/application";
+import { deadlinePassed, employerCanSetJobStatus } from "@/lib/domain/application";
 import { formatDate } from "@/lib/format";
 import { ButtonLink, EmptyState, PageHeader, Table } from "@/components/ui/primitives";
 import { StatusBadge } from "@/components/ui/status";
@@ -17,7 +17,6 @@ export default async function EmployerJobsPage() {
   const jobs = company
     ? await db.job.findMany({ where: { companyId: company.id }, include: { _count: { select: { applications: true } } }, orderBy: { updatedAt: "desc" } })
     : [];
-  const now = Date.now();
 
   return (
     <div>
@@ -38,7 +37,7 @@ export default async function EmployerJobsPage() {
           </thead>
           <tbody className="divide-y divide-line">
             {jobs.map((j) => {
-              const expired = !!j.deadline && j.deadline.getTime() < now;
+              const expired = deadlinePassed(j.deadline);
               return (
                 <tr key={j.id}>
                   <td>

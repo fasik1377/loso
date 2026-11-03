@@ -49,3 +49,8 @@ const JOB_TRANSITIONS: Record<JobStatus, JobStatus[]> = {
 export function employerCanSetJobStatus(from: JobStatus, to: JobStatus): boolean {
   return JOB_TRANSITIONS[from].includes(to);
 }
+
+/** True when a deadline exists and has passed. */
+export function deadlinePassed(deadline: Date | null, now: Date = new Date()): boolean {
+  return !!deadline && deadline.getTime() < now.getTime();
+}

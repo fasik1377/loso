@@ -16,3 +16,15 @@ export function averageRating(ratings: number[]): number | null {
   if (ratings.length === 0) return null;
   return Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 100) / 100;
 }
+
+/** Employer reviews: only the hired candidate of that application, once. */
+export function companyReviewEligibility(
+  application: { applicantId: string; status: string; companyOwnerId: string; hasReview: boolean },
+  actorId: string,
+): { ok: true } | { ok: false; reason: string } {
+  if (application.applicantId !== actorId) return { ok: false, reason: "Only the hired candidate can review this employer." };
+  if (application.companyOwnerId === actorId) return { ok: false, reason: "You cannot review your own company." };
+  if (application.status !== "HIRED") return { ok: false, reason: "You can review an employer after you are hired." };
+  if (application.hasReview) return { ok: false, reason: "You have already reviewed this employer for this job." };
+  return { ok: true };
+}

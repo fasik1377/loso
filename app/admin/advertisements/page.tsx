@@ -10,8 +10,11 @@ import { adStats } from "@/lib/services/ads";
 import { fileUrl } from "@/lib/services/files";
 import { buildQuery, int, str } from "@/lib/search-params";
 import { formatDate, humanize } from "@/lib/format";
+import { formatMoney } from "@/lib/money";
+import { publicJobWhere } from "@/lib/services/jobs";
+import { StaffAdForm } from "./staff-ad-form";
 import { moderateAdAction } from "@/lib/actions/admin";
-import { Badge, EmptyState, PageHeader, Pagination, Table, buttonClass } from "@/components/ui/primitives";
+import { Alert, Badge, Card, CardBody, EmptyState, PageHeader, Pagination, Table, buttonClass } from "@/components/ui/primitives";
 import { StatusBadge } from "@/components/ui/status";
 import { ActionButton, FilterField, ReasonForm, adminInput } from "@/components/admin/action-forms";
 
@@ -28,22 +31,39 @@ export default async function AdminAdvertisementsPage({ searchParams }: PageProp
   const now = new Date();
 
   const where: Prisma.AdvertisementWhereInput = status ? { status } : {};
-  const [total, ads] = await Promise.all([
+  const [total, ads, jobs, revenue] = await Promise.all([
     db.advertisement.count({ where }),
     db.advertisement.findMany({
       where,
-      include: { owner: { select: { id: true, fullName: true } }, placements: true },
+      include: { owner: { select: { id: true, fullName: true } }, placements: true, job: { select: { id: true, title: true } } },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
+    db.job.findMany({ where: publicJobWhere(now), select: { id: true, title: true, company: { select: { name: true } } }, orderBy: { publishedAt: "desc" }, take: 200 }),
+    db.paymentTransaction.aggregate({ where: { purpose: "ADVERTISEMENT", status: "SUCCEEDED" }, _sum: { amountMinor: true } }),
   ]);
   const stats: Record<string, { impressions: number; clicks: number } | undefined> = ads.length ? await adStats(ads.map((a) => a.id)) : {};
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div>
-      <PageHeader title="Advertisements" description="Approve ads before they run. Scheduled, active and expired are derived from the approved ad's dates." />
+      <PageHeader
+        title="Advertisements"
+        description="Post paid ads and sponsored jobs, and moderate ads submitted by businesses. Scheduled, active and expired are derived from the dates."
+        actions={<Badge tone="success">Ad revenue recorded: {formatMoney(revenue._sum.amountMinor ?? 0)}</Badge>}
+      />
+      {str(sp, "created") && <div className="mb-4"><Alert tone="success">Advertisement published.</Alert></div>}
+
+      <Card className="mb-8">
+        <CardBody>
+          <h2 className="font-semibold text-ink">Post a paid advertisement</h2>
+          <p className="mb-4 text-sm text-muted">
+            Use this after the advertiser has paid. Choose a job to run it as a <strong>sponsored job</strong>, or leave it empty for a general business ad. The fee is recorded as advertising revenue, separate from registration fees.
+          </p>
+          <StaffAdForm jobs={jobs.map((j) => ({ value: j.id, label: `${j.title} — ${j.company.name}` }))} />
+        </CardBody>
+      </Card>
 
       <form method="get" className="mb-6 flex flex-wrap items-end gap-3" aria-label="Filter advertisements">
         <FilterField label="Moderation status">
@@ -92,6 +112,8 @@ export default async function AdminAdvertisementsPage({ searchParams }: PageProp
                   <td className="min-w-[14rem] max-w-sm">
                     <p className="font-medium text-ink">{ad.title}</p>
                     <p className="text-xs text-muted">{ad.businessName}</p>
+                    {ad.job && <p className="mt-1 text-xs">Sponsored job: <Link href={`/jobs/${ad.job.id}`} className="text-brand hover:underline">{ad.job.title}</Link></p>}
+                    {ad.postedByStaff && <Badge tone="brand">Posted by admin</Badge>}
                     {ad.body && <p className="mt-1 text-xs text-ink">{ad.body}</p>}
                     {ad.destinationUrl && <p className="mt-1 break-all font-mono text-xs text-muted">{ad.destinationUrl}</p>}
                     {ad.moderationNote && <p className="mt-1 text-xs text-muted">Note: {ad.moderationNote}</p>}
@@ -108,7 +130,7 @@ export default async function AdminAdvertisementsPage({ searchParams }: PageProp
                   <td className="whitespace-nowrap text-xs">{formatDate(ad.startsAt)} – {formatDate(ad.endsAt)}</td>
                   <td>
                     <StatusBadge status={display} />
-                    {!ad.isPaid && <p className="mt-1 text-xs text-muted">Unpaid</p>}
+                    {ad.chargeMinor ? <p className="mt-1 text-xs text-success">Paid {formatMoney(ad.chargeMinor, ad.currency)}</p> : !ad.isPaid && <p className="mt-1 text-xs text-muted">Unpaid</p>}
                   </td>
                   <td className="whitespace-nowrap">{s.impressions} / {s.clicks}</td>
                   <td>

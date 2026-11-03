@@ -1,20 +1,47 @@
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, BadgeCheck, Briefcase, CheckCircle2, Flag, Lock, MessageSquare, Search, ShieldCheck, Star, UserPlus } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  Flag,
+  Lock,
+  MessageSquare,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { db } from "@/lib/db";
-import { marketConfig } from "@/lib/config";
 import { publicJobWhere, jobCompanySelect } from "@/lib/services/jobs";
 import { publicWorkerWhere, workerUserSelect } from "@/lib/services/workers";
 import { areaLocations, jobCategories, serviceCategories } from "@/lib/services/taxonomy";
+import { topRated } from "@/lib/services/companies";
+import { fileUrl } from "@/lib/services/files";
+import { getDictionary } from "@/lib/i18n/server";
 import { ButtonLink, Card, EmptyState } from "@/components/ui/primitives";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import { HeroSearch } from "@/components/marketplace/hero-search";
+import { HeroVisual } from "@/components/marketplace/hero-visual";
+import { RotatingText } from "@/components/marketplace/rotating-text";
 import { CategoryIcon } from "@/components/marketplace/category-icon";
 import { JobCard, WorkerCard } from "@/components/marketplace/cards";
 import { AdSlot } from "@/components/marketplace/ad-slot";
+import { TopRatedShowcase } from "@/components/marketplace/spotlight";
+import { SpotlightPopup, type SpotlightItem } from "@/components/marketplace/spotlight-popup";
+import { CategoryMarquee } from "@/components/marketplace/category-marquee";
+import { Reveal } from "@/components/ui/reveal";
+import { CountUp } from "@/components/ui/count-up";
 
-export default async function HomePage() {
-  await connection(); // always render with live data
-  const [services, jobCats, locations, jobs, workers] = await Promise.all([
+async function HomePageContent() {
+  await connection(); // live data: render per request
+  const [{ t }, services, jobCats, locations, jobs, workers, top, stats] = await Promise.all([
+    getDictionary(),
     serviceCategories(),
     jobCategories(),
     areaLocations(),
@@ -34,38 +61,145 @@ export default async function HomePage() {
       orderBy: [{ ratingAverage: "desc" }, { completedCount: "desc" }],
       take: 6,
     }),
+    topRated(5),
+    Promise.all([
+      db.workerProfile.count({ where: { user: { status: "ACTIVE", isDemo: false } } }),
+      db.job.count({ where: publicJobWhere() }),
+      db.serviceRequest.count({ where: { status: "COMPLETED" } }),
+      db.company.count({ where: { status: "APPROVED", isDemo: false } }),
+    ]),
   ]);
+  const [workerCount, jobCount, completedCount, companyCount] = stats;
+  const h = t.home;
+
+  // Pop-up spotlight: #1 worker and #1 employer (plus runners-up), by real ratings only.
+  const spotlight: SpotlightItem[] = [
+    ...top.workers.slice(0, 2).map((w) => ({
+      kind: "worker" as const,
+      href: `/workers/${w.user.id}`,
+      name: w.user.fullName,
+      sub: w.headline ?? w.services[0]?.category.name ?? t.spotlight.serviceProvider,
+      avatar: fileUrl(w.user.profile?.avatarFileId),
+      rating: w.ratingAverage ?? 0,
+      count: w.ratingCount,
+    })),
+    ...top.companies.slice(0, 2).map((c) => ({
+      kind: "company" as const,
+      href: `/companies/${c.id}`,
+      name: c.name,
+      sub: c.industry ?? t.spotlight.verifiedEmployer,
+      avatar: fileUrl(c.logoFileId),
+      rating: c.ratingAverage ?? 0,
+      count: c.ratingCount,
+    })),
+  ];
 
   return (
     <>
       {/* Hero */}
-      <section className="bg-brand">
-        <div className="mx-auto max-w-7xl px-4 pb-14 pt-12 sm:px-6 md:pb-20 md:pt-16">
-          <p className="text-sm font-semibold uppercase tracking-wider text-gold">{marketConfig.tagline}</p>
-          <h1 className="mt-3 max-w-3xl text-3xl font-bold leading-tight text-white sm:text-5xl">
-            Find Skilled Workers. Discover Jobs. Grow Your Future.
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-white/80">{marketConfig.supportingMessage}</p>
-          <div className="mt-8 max-w-5xl">
+      <section className="relative overflow-hidden bg-brand-deep">
+        {/* Ambient motion: drifting glows + subtle dot grid */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div className="absolute -right-32 -top-32 h-[28rem] w-[28rem] animate-drift rounded-full bg-gold/20 blur-3xl" />
+          <div className="absolute -bottom-40 -left-24 h-[26rem] w-[26rem] animate-drift rounded-full bg-sky-400/10 blur-3xl [animation-delay:-9s]" />
+          <div className="absolute inset-0 opacity-[0.07] [background-image:radial-gradient(white_1px,transparent_1px)] [background-size:22px_22px]" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 md:pt-16 lg:pb-28">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
+            <div>
+              <p className="inline-flex animate-fade-up items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gold ring-1 ring-white/15">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> {t.hero.badge}
+              </p>
+              <h1 className="mt-5 animate-fade-up text-4xl font-extrabold leading-[1.1] tracking-tight text-white [animation-delay:80ms] sm:text-5xl xl:text-6xl">
+                {t.hero.titleLine1}
+                <br />
+                {t.hero.titleLine2}
+                <br />
+                <span className="animate-shimmer bg-[linear-gradient(90deg,#F4B942,#FFE3A3,#F4B942)] bg-[length:200%_auto] bg-clip-text text-transparent">{t.hero.titleLine3}</span>
+              </h1>
+              <div aria-hidden="true" className="tilet mt-5 w-44 animate-fade-up opacity-90 [animation-delay:120ms]" />
+              <p className="mt-5 flex animate-fade-up flex-wrap items-baseline gap-x-2 text-xl font-semibold text-white/90 [animation-delay:160ms]">
+                {t.hero.lookingFor && <span>{t.hero.lookingFor}</span>}
+                <RotatingText items={t.hero.rotating} className="min-w-[12ch] text-gold" />
+              </p>
+              <p className="mt-3 max-w-xl animate-fade-up text-lg text-white/75 [animation-delay:200ms]">{t.hero.subtitle}</p>
+              <div className="mt-7 flex animate-fade-up flex-wrap gap-3 [animation-delay:240ms]">
+                <ButtonLink href="/jobs" variant="gold" size="lg">
+                  <Briefcase className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaFindWork}
+                </ButtonLink>
+                <ButtonLink href="/services" size="lg" className="bg-white/10 ring-1 ring-white/25 hover:bg-white/20">
+                  <Search className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaHire}
+                </ButtonLink>
+              </div>
+              <ul className="mt-7 grid gap-2 text-sm text-white/80 sm:grid-cols-1">
+                {t.hero.trust.map((line, i) => (
+                  <li key={line} className="inline-flex animate-fade-up items-center gap-2" style={{ animationDelay: `${300 + i * 80}ms` }}>
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-gold" aria-hidden="true" /> {line}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mx-auto w-full max-w-[420px] animate-fade-up [animation-delay:200ms] lg:max-w-none">
+              <HeroVisual />
+            </div>
+          </div>
+
+          <div className="mt-10 animate-fade-up [animation-delay:320ms] lg:mt-6">
             <HeroSearch
+              t={t.search}
               locations={locations.map((l) => ({ value: l.slug, label: l.name }))}
               serviceCategories={services.map((c) => ({ value: c.slug, label: c.name }))}
               jobCategories={jobCats.map((c) => ({ value: c.slug, label: c.name }))}
             />
           </div>
         </div>
+
+        {/* Soft wave into the page background */}
+        <svg aria-hidden="true" className="absolute inset-x-0 bottom-0 h-10 w-full text-canvas" viewBox="0 0 1440 40" preserveAspectRatio="none">
+          <path fill="currentColor" d="M0 40V22C240 2 480 0 720 12s480 24 720 6v22z" />
+        </svg>
       </section>
+
+      {/* Live stats */}
+      <section aria-label={t.stats.label} className="relative z-10 mx-auto -mt-6 max-w-6xl px-4 sm:px-6">
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-xl shadow-brand/5 md:grid-cols-4">
+          <StatTile icon={<Users className="h-5 w-5" />} value={workerCount} label={t.stats.verifiedWorkers} />
+          <StatTile icon={<Briefcase className="h-5 w-5" />} value={jobCount} label={t.stats.openJobs} />
+          <StatTile icon={<CheckCircle2 className="h-5 w-5" />} value={completedCount} label={t.stats.servicesCompleted} />
+          <StatTile icon={<Building2 className="h-5 w-5" />} value={companyCount} label={t.stats.verifiedEmployers} />
+        </div>
+      </section>
+
+      {/* Moving ribbon of services */}
+      <div className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
+        <CategoryMarquee label={h.servicesTitle} items={services.map((c) => ({ slug: c.slug, name: c.name, icon: c.icon }))} />
+      </div>
+
+      {/* Sponsored jobs (admin-posted paid placements) */}
+      <div className="mx-auto max-w-7xl px-4 pt-14 sm:px-6">
+        <Reveal>
+          <AdSlot slot="HOME" take={3} title={h.sponsored} />
+        </Reveal>
+      </div>
 
       {/* Categories */}
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-        <SectionHeading title="Popular services" subtitle="Trusted local professionals for everyday needs." href="/services" linkLabel="All services" />
+        <Reveal>
+          <SectionHeading eyebrow={h.servicesEyebrow} title={h.servicesTitle} subtitle={h.servicesSubtitle} href="/services" linkLabel={h.allServices} />
+        </Reveal>
         {services.length === 0 ? (
-          <EmptyState title="No service categories yet" description="Administrators can add categories from the admin dashboard." />
+          <EmptyState title={h.noCategories} description={h.noCategoriesDesc} />
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {services.slice(0, 10).map((c) => (
-              <Link key={c.id} href={`/services/${c.slug}`} className="group flex flex-col items-center gap-2 rounded-xl border border-line bg-white p-4 text-center transition-colors hover:border-brand">
-                <span className="rounded-full bg-brand-50 p-3 text-brand group-hover:bg-brand group-hover:text-gold">
+            {services.slice(0, 10).map((c, i) => (
+              <Link
+                key={c.id}
+                href={`/services/${c.slug}`}
+                style={{ animationDelay: `${i * 50}ms` }}
+                className="group flex animate-fade-up flex-col items-center gap-3 rounded-2xl border border-line bg-card p-5 text-center transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-md"
+              >
+                <span className="rounded-2xl bg-brand-50 p-3.5 text-brand transition-all group-hover:scale-110 group-hover:bg-brand-deep group-hover:text-gold">
                   <CategoryIcon name={c.icon} />
                 </span>
                 <span className="text-sm font-medium text-ink">{c.name}</span>
@@ -75,34 +209,48 @@ export default async function HomePage() {
         )}
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <AdSlot slot="HOME" />
-      </div>
+      {/* Top rated */}
+      <section className="bg-card py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <Reveal>
+            <SectionHeading eyebrow={h.topEyebrow} title={h.topTitle} subtitle={h.topSubtitle} />
+            <TopRatedShowcase data={top} t={t.spotlight} />
+          </Reveal>
+        </div>
+      </section>
 
       {/* Jobs */}
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-        <SectionHeading title="Latest job opportunities" subtitle="Open vacancies from employers in Hawassa." href="/jobs" linkLabel="Browse all jobs" />
+        <Reveal>
+          <SectionHeading eyebrow={h.jobsEyebrow} title={h.jobsTitle} subtitle={h.jobsSubtitle} href="/jobs" linkLabel={h.browseAllJobs} />
+        </Reveal>
         {jobs.length === 0 ? (
-          <EmptyState icon={<Briefcase className="h-8 w-8" />} title="No open jobs right now" description="New vacancies appear here as soon as employers publish them." action={<ButtonLink href="/register?type=employer" variant="outline">Post a job</ButtonLink>} />
+          <EmptyState icon={<Briefcase className="h-8 w-8" />} title={h.noJobs} description={h.noJobsDesc} action={<ButtonLink href="/register?type=employer" variant="outline">{h.postJob}</ButtonLink>} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {jobs.map((j) => (
-              <JobCard key={j.id} job={j} />
+            {jobs.map((j, i) => (
+              <Reveal key={j.id} delay={i * 70}>
+                <JobCard job={j} />
+              </Reveal>
             ))}
           </div>
         )}
       </section>
 
       {/* Workers */}
-      <section className="bg-white py-14">
+      <section className="bg-card py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <SectionHeading title="Skilled workers near you" subtitle="Ranked by real customer reviews and completed jobs on Loso." href="/services" linkLabel="Find more workers" />
+          <Reveal>
+            <SectionHeading eyebrow={h.workersEyebrow} title={h.workersTitle} subtitle={h.workersSubtitle} href="/services" linkLabel={h.findMoreWorkers} />
+          </Reveal>
           {workers.length === 0 ? (
-            <EmptyState title="No service providers listed yet" description="Approved workers will appear here." action={<ButtonLink href="/register" variant="outline">Offer your services</ButtonLink>} />
+            <EmptyState title={h.noWorkers} description={h.noWorkersDesc} action={<ButtonLink href="/register" variant="outline">{h.offerServices}</ButtonLink>} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {workers.map((w) => (
-                <WorkerCard key={w.id} worker={w} />
+              {workers.map((w, i) => (
+                <Reveal key={w.id} delay={i * 70}>
+                  <WorkerCard worker={w} />
+                </Reveal>
               ))}
             </div>
           )}
@@ -110,114 +258,147 @@ export default async function HomePage() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-14 sm:px-6">
-        <h2 className="text-2xl font-bold text-ink">How Loso works</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <HowColumn
-            title="For workers & job seekers"
-            steps={[
-              { icon: UserPlus, text: "Register, pay the registration fee and upload your ID." },
-              { icon: BadgeCheck, text: "Our team verifies your payment and documents, then activates your account." },
-              { icon: Search, text: "Apply for jobs and receive service requests from customers." },
-              { icon: Star, text: "Complete work, earn reviews and grow your reputation." },
-            ]}
-          />
-          <HowColumn
-            title="For customers & employers"
-            steps={[
-              { icon: Search, text: "Search workers by service, area and rating — or post a job vacancy." },
-              { icon: MessageSquare, text: "Send a service request or review applicants and chat in Loso." },
-              { icon: CheckCircle2, text: "Track progress and confirm when the work is done." },
-              { icon: Star, text: "Leave an honest review for completed services." },
-            ]}
-          />
+      <section id="how-it-works" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-16 sm:px-6">
+        <Reveal>
+          <SectionHeading eyebrow={h.howEyebrow} title={h.howTitle} subtitle={h.howSubtitle} />
+        </Reveal>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Reveal>
+            <HowColumn title={h.howWorkersTitle} icons={[UserPlus, BadgeCheck, Search, Star]} steps={h.howWorkersSteps} />
+          </Reveal>
+          <Reveal delay={120}>
+            <HowColumn title={h.howEmployersTitle} icons={[Building2, Briefcase, MessageSquare, Star]} steps={h.howEmployersSteps} />
+          </Reveal>
         </div>
       </section>
 
       {/* Benefits */}
-      <section className="bg-white py-14">
+      <section className="bg-card py-14">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 md:grid-cols-3">
-          {[
-            { title: "Verified people", text: "Workers are activated only after staff check their payment and identity documents.", icon: ShieldCheck },
-            { title: "Honest reviews", text: "Only customers with a completed service request can leave a review — one per job.", icon: Star },
-            { title: "Private by default", text: "Phone numbers stay hidden unless the owner allows it. Chat safely inside Loso.", icon: Lock },
-          ].map((b) => (
-            <Card key={b.title} className="p-6">
-              <b.icon className="h-8 w-8 text-gold-600" aria-hidden="true" />
-              <h3 className="mt-3 font-semibold text-ink">{b.title}</h3>
-              <p className="mt-1 text-sm text-muted">{b.text}</p>
-            </Card>
-          ))}
+          {h.benefits.map((b, i) => {
+            const Icon = [ShieldCheck, Star, Lock][i] ?? ShieldCheck;
+            return (
+              <Reveal key={b.title} delay={i * 100}>
+                <div className="group relative h-full overflow-hidden rounded-2xl border border-line bg-card p-6 transition-all hover:-translate-y-1 hover:border-gold/50 hover:shadow-lg">
+                  <div aria-hidden="true" className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gold/10 transition-transform duration-500 group-hover:scale-150" />
+                  <span className="relative inline-flex rounded-xl bg-gold-50 p-3 ring-1 ring-gold/20">
+                    <Icon className="h-6 w-6 text-gold-600" aria-hidden="true" />
+                  </span>
+                  <h3 className="relative mt-4 font-semibold text-ink">{b.title}</h3>
+                  <p className="relative mt-1 text-sm text-muted">{b.text}</p>
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 
       {/* Trust & safety */}
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+        <Reveal>
         <Card className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex gap-4">
-            <Flag className="mt-1 h-6 w-6 shrink-0 text-danger" aria-hidden="true" />
+            <span className="h-fit rounded-xl bg-danger/10 p-3">
+              <Flag className="h-6 w-6 text-danger" aria-hidden="true" />
+            </span>
             <div>
-              <h2 className="text-lg font-semibold text-ink">Trust & safety</h2>
-              <p className="mt-1 max-w-2xl text-sm text-muted">
-                Never pay anyone outside an agreed service, never share your password, and report suspicious profiles, jobs or messages. Our moderators review every report.
-              </p>
+              <h2 className="text-lg font-semibold text-ink">{h.trustTitle}</h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted">{h.trustText}</p>
             </div>
           </div>
-          <ButtonLink href="/help#safety" variant="outline">Safety tips</ButtonLink>
+          <ButtonLink href="/help#safety" variant="outline">{h.safetyTips}</ButtonLink>
         </Card>
+        </Reveal>
       </section>
 
       {/* CTAs */}
-      <section className="mx-auto grid max-w-7xl gap-4 px-4 pb-16 sm:px-6 md:grid-cols-2">
-        <div className="rounded-2xl bg-brand p-8 text-white">
-          <h2 className="text-2xl font-bold">Ready to offer your skills?</h2>
-          <p className="mt-2 text-white/80">Create a worker profile, get verified and start receiving opportunities.</p>
-          <ButtonLink href="/register" variant="gold" className="mt-6">
-            Register as a worker <ArrowRight className="h-4 w-4" />
+      <section className="mx-auto grid max-w-7xl gap-4 px-4 pb-20 sm:px-6 md:grid-cols-2">
+        <div className="relative overflow-hidden rounded-3xl bg-brand-deep p-8 text-white">
+          <div aria-hidden="true" className="absolute -right-10 -top-10 h-40 w-40 animate-drift rounded-full bg-gold/25 blur-2xl" />
+          <div aria-hidden="true" className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(white_1px,transparent_1px)] [background-size:18px_18px]" />
+          <div aria-hidden="true" className="tilet absolute inset-x-0 bottom-0 opacity-40" />
+          <h2 className="relative text-2xl font-bold">{h.ctaWorkerTitle}</h2>
+          <p className="relative mt-2 text-white/80">{h.ctaWorkerText}</p>
+          <ButtonLink href="/register" variant="gold" className="relative mt-6">
+            {h.ctaWorkerButton} <ArrowRight className="h-4 w-4" />
           </ButtonLink>
         </div>
-        <div className="rounded-2xl border border-gold bg-gold-50 p-8">
-          <h2 className="text-2xl font-bold text-brand">Hiring in Hawassa?</h2>
-          <p className="mt-2 text-ink/80">Create a company profile, publish vacancies and manage applicants in one place.</p>
+        <div className="relative overflow-hidden rounded-3xl border border-gold bg-gold-50 p-8">
+          <div aria-hidden="true" className="tilet absolute inset-x-0 bottom-0 opacity-50" />
+          <h2 className="text-2xl font-bold text-brand">{h.ctaEmployerTitle}</h2>
+          <p className="mt-2 text-ink/80">{h.ctaEmployerText}</p>
           <ButtonLink href="/register?type=employer" className="mt-6">
-            Register as an employer <ArrowRight className="h-4 w-4" />
+            {h.ctaEmployerButton} <ArrowRight className="h-4 w-4" />
           </ButtonLink>
         </div>
       </section>
+
+      <SpotlightPopup items={spotlight} t={t.spotlight} />
     </>
   );
 }
 
-function SectionHeading({ title, subtitle, href, linkLabel }: { title: string; subtitle: string; href: string; linkLabel: string }) {
+function StatTile({ icon, value, label }: { icon: ReactNode; value: number; label: string }) {
   return (
-    <div className="mb-6 flex items-end justify-between gap-4">
+    <div className="group flex items-center gap-3 bg-card px-5 py-5 transition-colors hover:bg-brand-50/60">
+      <span className="rounded-xl bg-brand-50 p-2.5 text-brand transition-transform group-hover:scale-110" aria-hidden="true">{icon}</span>
       <div>
-        <h2 className="text-2xl font-bold text-ink">{title}</h2>
-        <p className="mt-1 text-sm text-muted">{subtitle}</p>
+        <p className="text-2xl font-bold text-ink">
+          <CountUp value={value} />
+        </p>
+        <p className="text-xs text-muted">{label}</p>
       </div>
-      <Link href={href} className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-brand hover:underline sm:inline-flex">
-        {linkLabel} <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
     </div>
   );
 }
 
-function HowColumn({ title, steps }: { title: string; steps: { icon: typeof Search; text: string }[] }) {
+function SectionHeading({ eyebrow, title, subtitle, href, linkLabel }: { eyebrow: string; title: string; subtitle: string; href?: string; linkLabel?: string }) {
+  return (
+    <div className="mb-8 flex items-end justify-between gap-4">
+      <div>
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gold-600">
+          <span aria-hidden="true" className="tilet h-[10px] w-8" />
+          {eyebrow}
+        </p>
+        <h2 className="mt-1 text-2xl font-bold text-ink sm:text-3xl">{title}</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p>
+      </div>
+      {href && linkLabel && (
+        <Link href={href} className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-brand hover:underline sm:inline-flex">
+          {linkLabel} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function HowColumn({ title, steps, icons }: { title: string; steps: string[]; icons: (typeof Search)[] }) {
   return (
     <Card className="p-6">
       <h3 className="font-semibold text-brand">{title}</h3>
-      <ol className="mt-4 space-y-4">
-        {steps.map((s, i) => (
-          <li key={i} className="flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-50 text-gold-600">
-              <s.icon className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <span className="pt-1.5 text-sm text-ink">
-              <span className="font-semibold">{i + 1}.</span> {s.text}
-            </span>
-          </li>
-        ))}
+      <ol className="relative mt-5 space-y-5 before:absolute before:bottom-5 before:left-5 before:top-5 before:w-px before:bg-gradient-to-b before:from-gold/60 before:to-transparent">
+        {steps.map((text, i) => {
+          const Icon = icons[i] ?? Star;
+          return (
+            <li key={i} className="flex gap-4">
+              <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-600 ring-4 ring-card">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+                <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-on-brand">{i + 1}</span>
+              </span>
+              <span className="pt-2 text-sm text-ink">{text}</span>
+            </li>
+          );
+        })}
       </ol>
     </Card>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function HomePage() {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <HomePageContent />
+    </Suspense>
   );
 }

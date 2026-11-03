@@ -9,11 +9,11 @@ type Variant = "primary" | "gold" | "outline" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand text-white hover:bg-brand-700 disabled:bg-brand/50",
+  primary: "bg-brand text-on-brand hover:bg-brand-700 disabled:bg-brand/50",
   gold: "bg-gold text-brand hover:bg-gold-600 disabled:bg-gold/50",
-  outline: "border border-line bg-white text-ink hover:bg-canvas disabled:text-muted",
+  outline: "border border-line bg-card text-ink hover:bg-canvas disabled:text-muted",
   ghost: "text-ink hover:bg-brand-50 disabled:text-muted",
-  danger: "bg-danger text-white hover:bg-red-700 disabled:bg-danger/50",
+  danger: "bg-danger text-white hover:bg-danger/90 disabled:bg-danger/50",
 };
 const sizes: Record<Size, string> = {
   sm: "h-8 px-3 text-sm",
@@ -39,7 +39,7 @@ export function ButtonLink({ variant = "primary", size = "md", className, ...pro
 }
 
 export function Card({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cx("rounded-xl border border-line bg-white shadow-sm", className)} {...props} />;
+  return <div className={cx("rounded-2xl border border-line bg-card shadow-[0_1px_2px_rgba(24,43,67,0.04)]", className)} {...props} />;
 }
 
 export function CardBody({ className, ...props }: ComponentProps<"div">) {
@@ -48,12 +48,12 @@ export function CardBody({ className, ...props }: ComponentProps<"div">) {
 
 type Tone = "neutral" | "brand" | "gold" | "success" | "warning" | "danger";
 const tones: Record<Tone, string> = {
-  neutral: "bg-slate-100 text-slate-700",
+  neutral: "bg-canvas text-muted ring-1 ring-line",
   brand: "bg-brand-50 text-brand",
-  gold: "bg-gold-50 text-amber-800",
-  success: "bg-green-50 text-success",
-  warning: "bg-amber-50 text-amber-800",
-  danger: "bg-red-50 text-danger",
+  gold: "bg-gold-50 text-amber-800 dark:text-amber-300",
+  success: "bg-success/10 text-success",
+  warning: "bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+  danger: "bg-danger/10 text-danger",
 };
 
 export function Badge({ tone = "neutral", className, children }: { tone?: Tone; className?: string; children: ReactNode }) {
@@ -74,7 +74,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
 
 export function EmptyState({ icon, title, description, action }: { icon?: ReactNode; title: string; description?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-line bg-white px-6 py-12 text-center">
+    <div className="flex flex-col items-center rounded-xl border border-dashed border-line bg-card px-6 py-12 text-center">
       {icon && <div className="mb-3 text-muted">{icon}</div>}
       <p className="font-semibold text-ink">{title}</p>
       {description && <p className="mt-1 max-w-md text-sm text-muted">{description}</p>}
@@ -85,10 +85,10 @@ export function EmptyState({ icon, title, description, action }: { icon?: ReactN
 
 export function Alert({ tone = "neutral", title, children }: { tone?: "neutral" | "success" | "warning" | "danger"; title?: string; children?: ReactNode }) {
   const map = {
-    neutral: "border-line bg-white text-ink",
-    success: "border-green-200 bg-green-50 text-success",
-    warning: "border-amber-200 bg-amber-50 text-amber-900",
-    danger: "border-red-200 bg-red-50 text-danger",
+    neutral: "border-line bg-card text-ink",
+    success: "border-success/30 bg-success/10 text-success",
+    warning: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200",
+    danger: "border-danger/30 bg-danger/10 text-danger",
   };
   return (
     <div role={tone === "danger" ? "alert" : "status"} className={cx("rounded-lg border px-4 py-3 text-sm", map[tone])}>
@@ -146,7 +146,7 @@ export function Pagination({ page, pages, hrefFor }: { page: number; pages: numb
 
 export function Table({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-line bg-white">
+    <div className="overflow-x-auto rounded-xl border border-line bg-card">
       <table className="min-w-full divide-y divide-line text-sm [&_td]:px-4 [&_td]:py-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-semibold [&_th]:text-muted [&_tbody_tr]:align-top">
         {children}
       </table>

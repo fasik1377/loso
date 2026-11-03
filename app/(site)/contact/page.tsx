@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { getSettings } from "@/lib/settings";
@@ -6,7 +8,7 @@ import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = { title: "Contact" };
 
-export default async function ContactPage() {
+async function ContactPageContent() {
   await connection();
   const settings = await getSettings();
   return (
@@ -28,5 +30,14 @@ export default async function ContactPage() {
         <p className="text-muted">To report a specific profile, job or message, use the &ldquo;Report&rdquo; link on that item so moderators get the details.</p>
       </aside>
     </div>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <ContactPageContent />
+    </Suspense>
   );
 }

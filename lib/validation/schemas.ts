@@ -235,6 +235,12 @@ export const reviewSchema = z.object({
   comment: optionalText(1000),
 });
 
+export const companyReviewSchema = z.object({
+  applicationId: z.string().min(1).max(40),
+  rating: z.coerce.number().int().min(1, "Choose a rating").max(5),
+  comment: optionalText(1000),
+});
+
 export const messageSchema = z.object({
   conversationId: z.string().min(1).max(40),
   body: z.string().trim().min(1, "Message cannot be empty").max(2000, "Message is too long"),
@@ -261,6 +267,26 @@ export const advertisementSchema = z
   })
   .refine((d) => d.endsAt > d.startsAt, { path: ["endsAt"], message: "End date must be after the start date" });
 
+/** Admin-posted paid ad (optionally promoting a published job). charge is in ETB, stored as minor units. */
+export const staffAdvertisementSchema = z
+  .object({
+    jobId: optionalText(40),
+    businessName: z.string().trim().max(120).default(""),
+    contactPhone: optionalText(30),
+    contactEmail: optionalEmail,
+    title: trimmed(80).min(3, "Enter a headline"),
+    body: optionalText(200),
+    destinationUrl: optionalText(300),
+    startsAt: z.string().min(1, "Choose a start date").transform((v) => new Date(`${v}T00:00:00`)),
+    endsAt: z.string().min(1, "Choose an end date").transform((v) => new Date(`${v}T23:59:59`)),
+    slots: z.array(z.enum(["HOME", "JOBS", "SERVICES", "WORKER_PROFILE"])).min(1, "Choose at least one placement"),
+    charge: z.coerce.number().min(0, "Enter 0 or more").max(10_000_000).transform((n) => Math.round(n * 100)),
+    paymentMethod: z.enum(["bank_transfer", "telebirr_transfer", "cash_office"]),
+    paymentReference: optionalText(64).pipe(z.string().regex(/^[A-Za-z0-9-_/]+$/, "Use only letters, numbers, - _ /").optional()),
+  })
+  .refine((d) => d.endsAt > d.startsAt, { path: ["endsAt"], message: "End date must be after the start date" })
+  .refine((d) => d.jobId || d.businessName, { path: ["businessName"], message: "Enter the advertiser's business name or choose a job" });
+
 export const categorySchema = z.object({
   name: trimmed(80).min(2),
   description: optionalText(300),
@@ -285,8 +311,11 @@ export function formToObject(form: FormData, arrayKeys: string[] = [], boolKeys:
   const out: Record<string, unknown> = {};
   for (const [k, v] of form.entries()) {
     if (v instanceof File) continue;
-    if (arrayKeys.includes(k)) (out[k] = (out[k] as string[] | undefined) ?? []), (out[k] as string[]).push(v);
-    else out[k] = v;
+    if (arrayKeys.includes(k)) {
+      const list = (out[k] as string[] | undefined) ?? [];
+      list.push(v);
+      out[k] = list;
+    } else out[k] = v;
   }
   for (const k of arrayKeys) out[k] ??= [];
   for (const k of boolKeys) out[k] = form.get(k) === "on" || form.get(k) === "true";

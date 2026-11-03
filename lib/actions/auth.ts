@@ -18,7 +18,8 @@ export async function registerAction(input: RegisterInput): Promise<ActionResult
     if (!parsed.success) return invalid(parsed.error);
     const { userId } = await registerUser(parsed.data);
     await createSession(userId);
-    redirect(parsed.data.accountType === "WORKER" ? "/account-status" : parsed.data.accountType === "EMPLOYER" ? "/employer/company" : "/dashboard");
+    // Job seekers and employers wait for admin verification on the status page.
+    redirect(parsed.data.accountType === "CUSTOMER" ? "/dashboard" : "/account-status");
   });
 }
 

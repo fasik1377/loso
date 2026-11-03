@@ -12,11 +12,14 @@ import { activateUser, reviewRegistrationPayment, reviewVerification, setAccount
 import { createPasswordReset } from "@/lib/services/auth";
 import { moderateJob } from "@/lib/services/jobs";
 import { moderateReview } from "@/lib/services/service-requests";
-import { moderateAdvertisement } from "@/lib/services/ads";
+import { createStaffAdvertisement, moderateAdvertisement } from "@/lib/services/ads";
+import { moderateCompanyReview } from "@/lib/services/companies";
+import { formFile, saveUpload } from "@/lib/services/files";
+import { redirect } from "next/navigation";
 import { hideReportedMessage, resolveReport } from "@/lib/services/moderation";
 import { getSettings, settingsSchema } from "@/lib/settings";
 import { appUrl } from "@/lib/config";
-import { categorySchema } from "@/lib/validation/schemas";
+import { categorySchema, formToObject, staffAdvertisementSchema } from "@/lib/validation/schemas";
 import { invalid, safeAction } from "./safe";
 
 const note = (form: FormData) => String(form.get("note") ?? "").trim().slice(0, 1000) || undefined;
@@ -130,6 +133,30 @@ export async function moderateAdAction(_: ActionResult | null, form: FormData): 
     await moderateAdvertisement(actor, id(form), action, note(form));
     revalidatePath("/admin/advertisements");
     return { ok: true, message: "Advertisement updated." };
+  });
+}
+
+/** Admin publishes a paid advertisement (optionally a sponsored job) and records the fee charged. */
+export async function createStaffAdAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  return safeAction(async () => {
+    const actor = await assertPermission("ads.manage");
+    const parsed = staffAdvertisementSchema.safeParse(formToObject(form, ["slots"]));
+    if (!parsed.success) return invalid(parsed.error);
+    const image = formFile(form, "image");
+    const imageFileId = image ? await saveUpload(image, "AD_BANNER", actor.id) : null;
+    await createStaffAdvertisement(actor, parsed.data, imageFileId);
+    revalidatePath("/admin/advertisements");
+    revalidatePath("/");
+    redirect("/admin/advertisements?created=1");
+  });
+}
+
+export async function moderateCompanyReviewAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  return safeAction(async () => {
+    const actor = await assertPermission("content.moderate");
+    await moderateCompanyReview(actor, id(form), form.get("hide") === "1", note(form));
+    revalidatePath("/admin/reviews");
+    return { ok: true, message: "Employer review updated." };
   });
 }
 

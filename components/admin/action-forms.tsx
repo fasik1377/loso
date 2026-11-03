@@ -14,7 +14,7 @@ type Variant = "primary" | "gold" | "outline" | "ghost" | "danger";
 
 /** Same look as the kit's inputClass (kept here so server components don't import values from a client module). */
 export const adminInput =
-  "block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
+  "block w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
 
 const domId = (parts: string[]) => parts.join("-").replace(/[^A-Za-z0-9_-]/g, "");
 

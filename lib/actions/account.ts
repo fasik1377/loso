@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppError, type ActionResult } from "@/lib/errors";
-import { assertActive, assertUser } from "@/lib/auth/guards";
+import { assertUser } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { submitManualPayment, submitVerification } from "@/lib/services/accounts";
 import { formFile, saveUpload } from "@/lib/services/files";
@@ -50,10 +50,11 @@ export async function submitVerificationAction(_: ActionResult | null, form: For
   });
 }
 
-/** Employers submit company documents for verification (account is already active). */
+/** Employers submit company documents for verification (while pending, or to re-verify a company). */
 export async function submitCompanyVerificationAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
   return safeAction(async () => {
-    const user = await assertActive();
+    const user = await assertUser();
+    if (!user.roles.includes("EMPLOYER") || !["PENDING", "ACTIVE"].includes(user.status)) throw new AppError("Only employer accounts can submit company documents.");
     await rateLimit(`cverify:${user.id}`, 5, 60 * 60);
     const company = await db.company.findFirst({ where: { ownerId: user.id } });
     if (!company) throw new AppError("Create your company profile first.");
@@ -69,6 +70,7 @@ export async function submitCompanyVerificationAction(_: ActionResult | null, fo
     });
     if (company.status === "REJECTED") await db.company.update({ where: { id: company.id }, data: { status: "PENDING_REVIEW" } });
     revalidatePath("/employer/company");
+    revalidatePath("/account-status");
     return { ok: true, message: "Company documents submitted for review." };
   });
 }

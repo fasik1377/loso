@@ -13,10 +13,12 @@ import { applyToJob, startApplicationConversation, withdrawApplication } from "@
 import { createReview, createServiceRequest, openServiceConversation, transitionServiceRequest } from "@/lib/services/service-requests";
 import { sendMessage, startDirectConversation } from "@/lib/services/messaging";
 import { createReport } from "@/lib/services/moderation";
+import { createCompanyReview } from "@/lib/services/companies";
 import type { ServiceRequestAction } from "@/lib/domain/service-request";
 import type { NotificationType } from "@/lib/generated/prisma";
 import {
   applicationSchema,
+  companyReviewSchema,
   contactSchema,
   formToObject,
   profileSchema,
@@ -205,6 +207,17 @@ export async function reviewAction(_: ActionResult | null, form: FormData): Prom
     await createReview(user, parsed.data);
     revalidatePath(`/dashboard/service-requests/${parsed.data.serviceRequestId}`);
     return { ok: true, message: "Thank you! Your review has been published." };
+  });
+}
+
+export async function companyReviewAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  return safeAction(async () => {
+    const user = await assertActive();
+    const parsed = companyReviewSchema.safeParse(formToObject(form));
+    if (!parsed.success) return invalid(parsed.error);
+    await createCompanyReview(user, parsed.data);
+    revalidatePath("/dashboard/applications");
+    return { ok: true, message: "Thank you! Your employer review has been published." };
   });
 }
 

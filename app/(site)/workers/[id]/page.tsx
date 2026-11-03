@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -20,7 +23,8 @@ import { ServiceRequestForm } from "./service-request-form";
 
 export const metadata: Metadata = { title: "Worker profile" };
 
-export default async function WorkerProfilePage({ params }: PageProps<"/workers/[id]">) {
+async function WorkerProfilePageContent({ params }: PageProps<"/workers/[id]">) {
+  await connection(); // live data: render per request
   const { id } = await params;
   const viewer = await getCurrentUser();
   const worker = await getPublicWorker(id).catch((e) => {
@@ -214,5 +218,14 @@ export default async function WorkerProfilePage({ params }: PageProps<"/workers/
         {!viewer && <p className="text-center text-xs text-muted"><Link href="/help#safety" className="underline">Safety tips</Link> for hiring workers</p>}
       </aside>
     </div>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function WorkerProfilePage(props: PageProps<"/workers/[id]">) {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <WorkerProfilePageContent {...props} />
+    </Suspense>
   );
 }

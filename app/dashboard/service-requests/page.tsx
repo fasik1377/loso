@@ -30,9 +30,9 @@ export default async function ServiceRequestsPage({ searchParams }: PageProps<"/
         actions={isCustomer || !isWorker ? <ButtonLink href="/services">Find a worker</ButtonLink> : undefined}
       />
       {isWorker && (
-        <div className="mb-4 inline-flex rounded-lg border border-line bg-white p-1 text-sm">
+        <div className="mb-4 inline-flex rounded-lg border border-line bg-card p-1 text-sm">
           {(["received", "sent"] as const).map((v) => (
-            <Link key={v} href={`?view=${v}`} className={cx("rounded-md px-3 py-1.5 font-medium", view === v ? "bg-brand text-white" : "text-muted hover:text-ink")}>
+            <Link key={v} href={`?view=${v}`} className={cx("rounded-md px-3 py-1.5 font-medium", view === v ? "bg-brand text-on-brand" : "text-muted hover:text-ink")}>
               {v === "received" ? "Received" : "Sent"}
             </Link>
           ))}

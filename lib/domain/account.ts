@@ -35,8 +35,9 @@ export function requiresRegistrationFee(roles: readonly Role[]): boolean {
   return roles.includes("WORKER");
 }
 
+/** Job seekers/workers (identity documents) and employers (business documents) must be verified by an admin. */
 export function requiresVerification(roles: readonly Role[]): boolean {
-  return roles.includes("WORKER");
+  return roles.includes("WORKER") || roles.includes("EMPLOYER");
 }
 
 export function deriveAccountStage(s: AccountSnapshot): AccountStage {
@@ -92,7 +93,7 @@ export const STAGE_INFO: Record<AccountStage, { label: string; tone: "neutral" |
   PENDING_DOCUMENTS: {
     label: "Documents Required",
     tone: "warning",
-    help: "Upload an identity document (and certificates if you have them) for verification.",
+    help: "Upload your documents so an administrator can verify your account. You can't use Loso until it is approved.",
   },
   PENDING_VERIFICATION: {
     label: "Pending Verification",

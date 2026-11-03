@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { canActivate } from "@/lib/domain/account";
 import Link from "next/link";
 import { requirePermissionPage } from "@/lib/auth/guards";
 import { hasPermission, type Permission } from "@/lib/domain/permissions";
@@ -43,20 +44,17 @@ export default async function AdminOverviewPage() {
     db.serviceRequest.groupBy({ by: ["status"], _count: true }),
     db.paymentTransaction.aggregate({ where: { status: "SUCCEEDED", purpose: "REGISTRATION" }, _sum: { amountMinor: true } }),
     db.advertisement.count({ where: { status: "PENDING" } }),
-    // Candidates for activation; the "latest verification is approved" rule is applied below.
+    // Candidates for activation (workers and employers); the exact rule (canActivate) is applied below.
     db.user.findMany({
-      where: {
-        status: "PENDING",
-        registrationPayments: { some: { status: { in: ["VERIFIED", "WAIVED"] } } },
-        verifications: { some: { status: "APPROVED", companyId: null } },
-      },
+      where: { status: "PENDING", verifications: { some: { status: "APPROVED" } } },
       select: {
         id: true,
         fullName: true,
         phone: true,
         createdAt: true,
+        roles: { select: { role: true } },
         registrationPayments: { select: { status: true } },
-        verifications: { where: { companyId: null }, orderBy: { createdAt: "desc" }, take: 1, select: { status: true, reviewedAt: true } },
+        verifications: { orderBy: { createdAt: "desc" }, take: 1, select: { status: true, reviewedAt: true } },
       },
       orderBy: { createdAt: "asc" },
       take: 50,
@@ -66,7 +64,15 @@ export default async function AdminOverviewPage() {
   const byStatus = (s: string) => usersByStatus.find((r) => r.status === s)?._count ?? 0;
   const byRole = (r: string) => roleCounts.find((x) => x.role === r)?._count ?? 0;
   const requests = (s: string) => requestsByStatus.find((r) => r.status === s)?._count ?? 0;
-  const awaiting = candidates.filter((u) => u.verifications[0]?.status === "APPROVED");
+  const awaiting = candidates.filter(
+    (u) =>
+      canActivate({
+        status: "PENDING",
+        roles: u.roles.map((r) => r.role),
+        payment: u.registrationPayments[0] ?? null,
+        verification: u.verifications[0] ?? null,
+      }).ok,
+  );
 
   const queues: { href: string; label: string; count: number; perm: Permission }[] = [
     { href: "/admin/payments", label: "Payment reviews", count: pendingPayments, perm: "payments.review" },
@@ -84,7 +90,7 @@ export default async function AdminOverviewPage() {
       <SectionTitle title="Work queues" />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {queues.filter((q) => can(q.perm)).map((q) => (
-          <Link key={q.href} href={q.href} className="group rounded-xl border border-line bg-white p-4 shadow-sm transition-colors hover:border-brand">
+          <Link key={q.href} href={q.href} className="group rounded-xl border border-line bg-card p-4 shadow-sm transition-colors hover:border-brand">
             <p className="text-sm text-muted">{q.label}</p>
             <p className={`mt-1 text-2xl font-bold ${q.count > 0 ? "text-brand" : "text-ink"}`}>{q.count}</p>
             <p className="mt-1 text-xs font-medium text-brand group-hover:underline">Open queue →</p>

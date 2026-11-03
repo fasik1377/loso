@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,7 +11,8 @@ import { WorkerSearchView } from "@/components/marketplace/worker-search";
 
 export const metadata: Metadata = { title: "Service category" };
 
-export default async function ServiceCategoryPage({ params, searchParams }: PageProps<"/services/[category]">) {
+async function ServiceCategoryPageContent({ params, searchParams }: PageProps<"/services/[category]">) {
+  await connection(); // live data: render per request
   const [{ category: slug }, sp] = await Promise.all([params, searchParams]);
   const category = await db.serviceCategory.findFirst({ where: { slug, active: true } });
   if (!category) notFound();
@@ -30,5 +34,14 @@ export default async function ServiceCategoryPage({ params, searchParams }: Page
         <WorkerSearchView sp={sp} basePath={`/services/${category.slug}`} fixedCategory={category.slug} />
       </div>
     </div>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function ServiceCategoryPage(props: PageProps<"/services/[category]">) {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <ServiceCategoryPageContent {...props} />
+    </Suspense>
   );
 }

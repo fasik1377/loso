@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canActivate, deriveAccountStage } from "@/lib/domain/account";
 import { availableActions, nextServiceRequestStatus } from "@/lib/domain/service-request";
-import { averageRating, reviewEligibility } from "@/lib/domain/review";
+import { averageRating, companyReviewEligibility, reviewEligibility } from "@/lib/domain/review";
 import { applicantCanWithdraw, employerCanMove, employerCanSetJobStatus, jobAcceptsApplications } from "@/lib/domain/application";
 import { canAssignRole, hasPermission } from "@/lib/domain/permissions";
 import { adDisplayStatus, sanitizeDestinationUrl } from "@/lib/domain/ads";
@@ -168,5 +168,37 @@ describe("file validation", () => {
   it("strips paths from file names", () => {
     expect(safeFileName("../../etc/passwd")).toBe("passwd");
     expect(safeFileName("C:\\x\\cv<script>.pdf")).toBe("cv_script_.pdf");
+  });
+});
+
+describe("mandatory admin verification for job seekers and employers", () => {
+  const employer = { status: "PENDING" as const, roles: ["EMPLOYER" as const], payment: null };
+  it("a new employer must upload documents and cannot be activated", () => {
+    expect(deriveAccountStage({ ...employer, verification: null })).toBe("PENDING_DOCUMENTS");
+    expect(canActivate({ ...employer, verification: null }).ok).toBe(false);
+  });
+  it("employer documents under review", () => {
+    expect(deriveAccountStage({ ...employer, verification: { status: "SUBMITTED" } })).toBe("PENDING_VERIFICATION");
+  });
+  it("approved employer is activatable without a registration fee", () => {
+    const s = { ...employer, verification: { status: "APPROVED" as const } };
+    expect(deriveAccountStage(s)).toBe("AWAITING_ACTIVATION");
+    expect(canActivate(s).ok).toBe(true);
+  });
+  it("customers need no verification", () => {
+    expect(canActivate({ status: "PENDING", roles: ["CUSTOMER"], payment: null, verification: null }).ok).toBe(true);
+  });
+});
+
+describe("employer reviews", () => {
+  const app = { applicantId: "a", status: "HIRED", companyOwnerId: "o", hasReview: false };
+  it("only the hired candidate may review, once", () => {
+    expect(companyReviewEligibility(app, "a").ok).toBe(true);
+    expect(companyReviewEligibility(app, "someone").ok).toBe(false);
+    expect(companyReviewEligibility({ ...app, status: "INTERVIEW" }, "a").ok).toBe(false);
+    expect(companyReviewEligibility({ ...app, hasReview: true }, "a").ok).toBe(false);
+  });
+  it("owners cannot review their own company", () => {
+    expect(companyReviewEligibility({ ...app, applicantId: "o" }, "o").ok).toBe(false);
   });
 });

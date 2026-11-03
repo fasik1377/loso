@@ -80,7 +80,7 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
     // transaction window on a high-latency connection.
     for (const id of created) await db.user.delete({ where: { id } }).catch(() => undefined);
     await db.$disconnect();
-  });
+  }, 600_000); // cleanup of emulated cascades is slow over high-latency links
 
   it("worker registration: pending → payment verified → documents approved → activated", async () => {
     const admin = await staff();
@@ -189,6 +189,9 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
 
   it("employer must be verified to publish; applications are unique", async () => {
     const employer = await sessionUser(await register("EMPLOYER"));
+    // Employers start pending: an administrator must verify them before they can use Loso.
+    expect(employer.status).toBe("PENDING");
+    expect((await accounts.getAccountSnapshot(employer.id)).stage).toBe("PENDING_DOCUMENTS");
     const { user: worker } = await activeWorker();
     const input = jobSchema.parse({
       title: "Test cashier",

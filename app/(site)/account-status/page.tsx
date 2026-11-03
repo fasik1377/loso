@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+import { connection } from "next/server";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import Link from "next/link";
 import { CheckCircle2, Circle, CircleDot, XCircle } from "lucide-react";
 import { requireUserPage } from "@/lib/auth/guards";
@@ -13,15 +15,18 @@ import { Alert, Badge, ButtonLink, Card, CardBody } from "@/components/ui/primit
 import { StatusBadge } from "@/components/ui/status";
 import { PaymentForm } from "./payment-form";
 import { VerificationForm } from "./verification-form";
+import { CompanyVerificationForm } from "@/app/employer/company/forms";
 
 export const metadata: Metadata = { title: "Account status" };
 
-export default async function AccountStatusPage() {
+async function AccountStatusPageContent() {
+  await connection(); // live data: render per request
   const user = await requireUserPage();
   const [{ payment, verification, snapshot, stage, user: full }, settings] = await Promise.all([getAccountSnapshot(user.id), getSettings()]);
   const info = STAGE_INFO[stage];
   const needsFee = requiresRegistrationFee(snapshot.roles);
   const needsDocs = requiresVerification(snapshot.roles);
+  const isEmployer = snapshot.roles.includes("EMPLOYER");
   const paymentDone = payment?.status === "VERIFIED" || payment?.status === "WAIVED";
   const latestTxn = payment?.transactions[0];
   const toneMap = { neutral: "neutral", warning: "warning", success: "success", danger: "danger" } as const;
@@ -33,6 +38,13 @@ export default async function AccountStatusPage() {
         <Badge tone={toneMap[info.tone]}>{info.label}</Badge>
       </div>
       <p className="mt-2 text-muted">{info.help}</p>
+      {stage !== "ACTIVE" && !["REJECTED", "SUSPENDED"].includes(stage) && (
+        <div className="mt-4">
+          <Alert tone="warning" title="Admin verification required">
+            Every job seeker and employer account is reviewed by a Loso administrator. You can only use Loso after your account is approved — we&apos;ll notify you here.
+          </Alert>
+        </div>
+      )}
       {full.statusReason && ["REJECTED", "SUSPENDED"].includes(stage) && (
         <div className="mt-4"><Alert tone="danger" title="Reason">{full.statusReason}</Alert></div>
       )}
@@ -85,7 +97,7 @@ export default async function AccountStatusPage() {
           {needsDocs && (
             <Step
               n={needsFee ? 3 : 2}
-              title="Verify your identity"
+              title={isEmployer ? "Verify your company" : "Verify your identity"}
               state={
                 verification?.status === "APPROVED"
                   ? "done"
@@ -105,7 +117,15 @@ export default async function AccountStatusPage() {
                 {verification?.reviewerNote && verification.status !== "APPROVED" && (
                   <Alert tone={verification.status === "REJECTED" ? "danger" : "warning"} title="Reviewer note">{verification.reviewerNote}</Alert>
                 )}
-                {(!verification || verification.status === "CHANGES_REQUESTED") && <VerificationForm />}
+                {(!verification || verification.status === "CHANGES_REQUESTED") &&
+                  (isEmployer ? (
+                    <>
+                      <p className="text-muted">Upload your business license or registration certificate. An administrator must verify it before you can sign in to your employer dashboard and post jobs.</p>
+                      <CompanyVerificationForm />
+                    </>
+                  ) : (
+                    <VerificationForm />
+                  ))}
               </div>
             </Step>
           )}
@@ -145,5 +165,14 @@ function Step({ n, title, state, children }: { n: number; title: string; state: 
         </CardBody>
       </Card>
     </li>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function AccountStatusPage() {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <AccountStatusPageContent />
+    </Suspense>
   );
 }

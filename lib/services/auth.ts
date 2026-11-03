@@ -22,8 +22,8 @@ const RESET_TTL_MS = 60 * 60 * 1000;
  *  - WORKER:   account PENDING; registration fee obligation created from current settings;
  *              must pay (staff-verified) AND pass document verification before activation.
  *  - CUSTOMER: ACTIVE immediately (no fee). Abuse is handled through reports + suspension.
- *  - EMPLOYER: ACTIVE login so they can complete the company profile, but the company stays
- *              PENDING_REVIEW and cannot publish jobs until staff approve it (configurable).
+ *  - EMPLOYER: account PENDING; must upload business documents and be verified + activated by
+ *              an administrator before using Loso. The company starts as PENDING_REVIEW.
  * Staff roles are never assignable here.
  */
 export async function registerUser(data: RegisterData): Promise<{ userId: string }> {
@@ -49,8 +49,9 @@ export async function registerUser(data: RegisterData): Promise<{ userId: string
         phone: data.phone,
         email: data.email ?? null,
         passwordHash,
-        status: data.accountType === "WORKER" ? "PENDING" : "ACTIVE",
-        activatedAt: data.accountType === "WORKER" ? null : new Date(),
+        // Job seekers and employers need admin verification; only customers start active.
+        status: data.accountType === "CUSTOMER" ? "ACTIVE" : "PENDING",
+        activatedAt: data.accountType === "CUSTOMER" ? new Date() : null,
         roles: { create: roles.map((role) => ({ role })) },
         profile: { create: {} },
       },
@@ -79,7 +80,7 @@ export async function registerUser(data: RegisterData): Promise<{ userId: string
           ownerId: u.id,
           name: data.companyName!,
           slug: `${base}-${u.id.slice(-6)}`,
-          status: settings.requireCompanyApprovalToPublish ? "PENDING_REVIEW" : "APPROVED",
+          status: "PENDING_REVIEW",
         },
       });
       await tx.companyMember.create({ data: { companyId: company.id, userId: u.id, role: "OWNER" } });

@@ -84,7 +84,7 @@ export default async function AdminVerificationsPage({ searchParams }: PageProps
             aria-current={type === t.value ? "page" : undefined}
             className={cx(
               "rounded-full border px-3 py-1 text-sm font-medium",
-              type === t.value ? "border-brand bg-brand text-white" : "border-line bg-white text-ink hover:bg-brand-50",
+              type === t.value ? "border-brand bg-brand text-on-brand" : "border-line bg-card text-ink hover:bg-brand-50",
             )}
           >
             {t.label}

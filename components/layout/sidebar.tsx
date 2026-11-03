@@ -77,7 +77,12 @@ export function Sidebar({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const counts = useCounts();
-  useEffect(() => setOpen(false), [pathname]);
+  // Close the mobile drawer after navigation (state adjusted during render, not in an effect).
+  const [lastPath, setLastPath] = useState(pathname);
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
+    setOpen(false);
+  }
 
   const isActive = (href: string) =>
     href === pathname || (href !== "/dashboard" && href !== "/admin" && href !== "/employer/dashboard" && pathname.startsWith(href + "/"));
@@ -98,7 +103,7 @@ export function Sidebar({ groups }: { groups: NavGroup[] }) {
                     aria-current={isActive(item.href) ? "page" : undefined}
                     className={cx(
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      isActive(item.href) ? "bg-white/10 text-gold" : "text-white/85 hover:bg-white/5 hover:text-white",
+                      isActive(item.href) ? "bg-card/10 text-gold" : "text-white/85 hover:bg-card/5 hover:text-white",
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -123,17 +128,17 @@ export function Sidebar({ groups }: { groups: NavGroup[] }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white shadow-lg lg:hidden"
+        className="fixed bottom-4 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-brand text-on-brand shadow-lg lg:hidden"
         aria-label="Open navigation"
         aria-expanded={open}
       >
         <Menu className="h-6 w-6" />
       </button>
-      <aside className="hidden w-64 shrink-0 bg-brand px-3 py-6 lg:block">{nav}</aside>
+      <aside className="hidden w-64 shrink-0 bg-brand-deep px-3 py-6 lg:block">{nav}</aside>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-72 overflow-y-auto bg-brand px-3 py-6">
+          <div className="absolute inset-y-0 left-0 w-72 overflow-y-auto bg-brand-deep px-3 py-6">
             <button type="button" onClick={() => setOpen(false)} className="mb-4 ml-auto flex rounded-lg p-2 text-white" aria-label="Close navigation">
               <X className="h-5 w-5" />
             </button>

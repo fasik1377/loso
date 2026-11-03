@@ -13,9 +13,9 @@ import { Field, inputClass } from "@/components/ui/form";
 type AccountType = RegisterInput["accountType"];
 
 const TYPES: { value: AccountType; title: string; text: string; icon: typeof User }[] = [
-  { value: "WORKER", title: "Worker / Job seeker", text: "Find jobs or offer your services. Registration fee + verification required.", icon: Briefcase },
+  { value: "WORKER", title: "Worker / Job seeker", text: "Find jobs or offer your services. Registration fee + admin verification required.", icon: Briefcase },
   { value: "CUSTOMER", title: "Customer", text: "Find and hire skilled workers. Free.", icon: User },
-  { value: "EMPLOYER", title: "Employer / Company", text: "Post vacancies and recruit. Company verification required to publish.", icon: Building2 },
+  { value: "EMPLOYER", title: "Employer / Company", text: "Post vacancies and recruit. Admin verification of your business required.", icon: Building2 },
 ];
 
 export function RegisterForm({ initialType }: { initialType: AccountType }) {
@@ -96,8 +96,8 @@ export function RegisterForm({ initialType }: { initialType: AccountType }) {
         <fieldset className="rounded-lg border border-line p-4">
           <legend className="px-1 text-sm font-medium text-ink">What are you looking for?</legend>
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#123B32]" {...register("seeksJobs")} /> Find a job (apply to vacancies)</label>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#123B32]" {...register("offersServices")} /> Offer my services to customers</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#182B43]" {...register("seeksJobs")} /> Find a job (apply to vacancies)</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#182B43]" {...register("offersServices")} /> Offer my services to customers</label>
           </div>
           {err("offersServices") && <p className="mt-1 text-xs text-danger">{err("offersServices")}</p>}
           <p className="mt-3 text-xs text-muted">
@@ -120,8 +120,14 @@ export function RegisterForm({ initialType }: { initialType: AccountType }) {
         </div>
       )}
 
+      {type === "EMPLOYER" && (
+        <p className="rounded-lg bg-gold-50 px-4 py-3 text-xs text-ink">
+          After registering, upload your business license. Your employer account becomes usable once a Loso administrator verifies it.
+        </p>
+      )}
+
       <label className="flex items-start gap-2 text-sm">
-        <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#123B32]" {...register("acceptTerms")} />
+        <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#182B43]" {...register("acceptTerms")} />
         <span>
           I agree to the <Link href="/terms" target="_blank" className="text-brand underline">terms of use</Link> and{" "}
           <Link href="/privacy" target="_blank" className="text-brand underline">privacy policy</Link>.

@@ -1,31 +1,209 @@
 @import "tailwindcss";
 
-/* Loso brand tokens. Use these utilities (bg-brand, text-ink, ...) instead of raw hex values. */
+/* Dark mode is driven by <html data-theme="dark"> (set before paint by the theme script). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Loso design tokens. Use these utilities (bg-brand, text-ink, ...) instead of raw hex values. */
 @theme {
-  --color-brand: #123b32;
-  --color-brand-700: #0d2c25;
-  --color-brand-50: #e8f0ee;
-  --color-brand-100: #d0e1dc;
+  /* Brand — Loso navy. brand = interactive (buttons, links); brand-deep = large surfaces (hero, footer, sidebar). */
+  --color-brand: #182b43;
+  --color-brand-deep: #182b43;
+  --color-on-brand: #ffffff;
+  --color-brand-700: #0f1d2f;
+  --color-brand-50: #edf1f7;
+  --color-brand-100: #d9e1ec;
   --color-gold: #f4b942;
   --color-gold-600: #d99a1e;
-  --color-gold-50: #fef6e4;
-  --color-canvas: #f8faf8;
-  --color-ink: #263238;
-  --color-muted: #64748b;
-  --color-line: #e2e8f0;
-  --color-danger: #dc2626;
-  --color-success: #15803d;
+  --color-gold-50: #fef7e6;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Neutrals & states */
+  --color-canvas: #f7f9fc; /* page background */
+  --color-card: #ffffff; /* card background */
+  --color-ink: #182b43; /* primary text */
+  --color-muted: #64748b; /* secondary text */
+  --color-line: #e5eaf0; /* borders */
+  --color-success: #16a36a;
+  --color-danger: #dc4444;
+
+  --font-sans: var(--font-inter), var(--font-ethiopic), "Nyala", ui-sans-serif, system-ui, sans-serif;
+
+  --animate-fade-up: fade-up 0.5s ease-out both;
+  --animate-pop-in: pop-in 0.35s ease-out both;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 8s ease-in-out infinite;
+  --animate-orbit: spin 48s linear infinite;
+  --animate-orbit-reverse: spin 48s linear infinite reverse;
+  --animate-constellation: spin 90s linear infinite;
+  --animate-constellation-reverse: spin 90s linear infinite reverse;
+  --animate-reveal: fade-up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pulse-ring: pulse-ring 3.2s ease-out infinite;
+  --animate-drift: drift 18s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 6s linear infinite;
+  --animate-word-in: word-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(40px, -30px) scale(1.15);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(60%);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Dark theme: same token names, night-time values. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-brand: #8fb3e8;
+  --color-brand-deep: #0f1f35;
+  --color-on-brand: #0b1422;
+  --color-brand-700: #b3ccf0;
+  --color-brand-50: #16263c;
+  --color-brand-100: #1e3250;
+  --color-gold-600: #f4b942;
+  --color-gold-50: #2a2213;
+  --color-canvas: #0b1422;
+  --color-card: #111d2e;
+  --color-ink: #e6edf7;
+  --color-muted: #94a3b8;
+  --color-line: #22314a;
+  --color-success: #2cc486;
+  --color-danger: #f06a6a;
+}
+
+:root {
+  color-scheme: light;
 }
 
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+/* Scroll-reveal: hidden until the Reveal component marks it visible (JS-only, so no-JS users see everything). */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.js .reveal.is-visible {
+  animation: var(--animate-reveal);
 }
 
 /* Visible keyboard focus everywhere. */
 :focus-visible {
   outline: 2px solid var(--color-gold-600);
   outline-offset: 2px;
+}
+
+/* Respect users who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * Tilet: the woven border motif of traditional Ethiopian cloth (habesha kemis / netela).
+ * A row of diamonds framed by two thin lines. Colour via `color` (defaults to gold).
+ */
+.tilet {
+  --tilet: currentColor;
+  position: relative;
+  height: 14px;
+  color: var(--color-gold);
+  background:
+    linear-gradient(135deg, var(--tilet) 25%, transparent 25%) -4px 3px / 8px 8px repeat-x,
+    linear-gradient(225deg, var(--tilet) 25%, transparent 25%) -4px 3px / 8px 8px repeat-x,
+    linear-gradient(315deg, var(--tilet) 25%, transparent 25%) 0 3px / 8px 8px repeat-x,
+    linear-gradient(45deg, var(--tilet) 25%, transparent 25%) 0 3px / 8px 8px repeat-x;
+}
+.tilet::before,
+.tilet::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  height: 1.5px;
+  background: var(--tilet);
+}
+.tilet::before {
+  top: 0;
+}
+.tilet::after {
+  bottom: 0;
 }

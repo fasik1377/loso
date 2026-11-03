@@ -143,7 +143,7 @@ export function JobForm({
           <div className="grid max-h-48 gap-2 overflow-y-auto rounded-lg border border-line p-3 sm:grid-cols-3">
             {skills.map((s) => (
               <label key={s.value} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" value={s.value} className="h-4 w-4 accent-[#123B32]" {...register("skillIds")} /> {s.label}
+                <input type="checkbox" value={s.value} className="h-4 w-4 accent-[#182B43]" {...register("skillIds")} /> {s.label}
               </label>
             ))}
           </div>
@@ -163,7 +163,7 @@ export function JobForm({
             <input id="deadline" type="date" className={inputClass} {...register("deadline")} />
           </Field>
         </div>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#123B32]" {...register("salaryVisible")} /> Show salary to applicants</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#182B43]" {...register("salaryVisible")} /> Show salary to applicants</label>
       </section>
 
       <section className="space-y-4">

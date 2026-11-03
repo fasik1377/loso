@@ -44,3 +44,4 @@ next-env.d.ts
 # loso: local private file storage (dev) and generated Prisma client
 /storage
 /lib/generated
+.next-dev.log

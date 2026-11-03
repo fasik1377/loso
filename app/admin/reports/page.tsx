@@ -173,7 +173,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps<"/adm
               <Link
                 key={t.label}
                 href={`/admin/reports${buildQuery(sp, { support: t.v, spage: undefined })}`}
-                className={cx("rounded-full border px-3 py-1 text-sm font-medium", (t.v === "all") === supportAll ? "border-brand bg-brand text-white" : "border-line bg-white text-ink hover:bg-brand-50")}
+                className={cx("rounded-full border px-3 py-1 text-sm font-medium", (t.v === "all") === supportAll ? "border-brand bg-brand text-on-brand" : "border-line bg-card text-ink hover:bg-brand-50")}
               >
                 {t.label}
               </Link>

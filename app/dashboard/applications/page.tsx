@@ -11,6 +11,8 @@ import { Button, Card, CardBody, EmptyState, PageHeader, ButtonLink } from "@/co
 import { ActionForm, SubmitButton } from "@/components/ui/form";
 import { StatusBadge } from "@/components/ui/status";
 import { ResumeUploadForm } from "./resume-form";
+import { CompanyReviewForm } from "./company-review-form";
+import { Stars } from "@/components/ui/status";
 
 export const metadata: Metadata = { title: "My applications" };
 
@@ -19,7 +21,7 @@ export default async function ApplicationsPage() {
   const [applications, resumes] = await Promise.all([
     db.jobApplication.findMany({
       where: { applicantId: user.id },
-      include: { job: { include: { company: { select: { name: true } } } }, events: { orderBy: { createdAt: "desc" }, take: 1 } },
+      include: { job: { include: { company: { select: { name: true } } } }, events: { orderBy: { createdAt: "desc" }, take: 1 }, companyReview: { select: { rating: true } } },
       orderBy: { updatedAt: "desc" },
     }),
     db.resume.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
@@ -58,6 +60,18 @@ export default async function ApplicationsPage() {
                   )}
                 </div>
               </CardBody>
+              {a.status === "HIRED" && (
+                <div className="border-t border-line bg-gold-50/60 px-4 py-3 sm:px-6">
+                  {a.companyReview ? (
+                    <p className="flex items-center gap-2 text-sm text-muted">You rated {a.job.company.name}: <Stars value={a.companyReview.rating} /></p>
+                  ) : (
+                    <details>
+                      <summary className="cursor-pointer text-sm font-semibold text-brand">Congratulations on being hired! Rate {a.job.company.name}</summary>
+                      <div className="mt-3"><CompanyReviewForm applicationId={a.id} /></div>
+                    </details>
+                  )}
+                </div>
+              )}
             </Card>
           ))}
         </div>

@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { str } from "@/lib/search-params";
@@ -6,7 +9,8 @@ import { ResetForm } from "./reset-form";
 
 export const metadata: Metadata = { title: "Choose a new password" };
 
-export default async function ResetPasswordPage({ searchParams }: PageProps<"/reset-password">) {
+async function ResetPasswordPageContent({ searchParams }: PageProps<"/reset-password">) {
+  await connection(); // live data: render per request
   const token = str(await searchParams, "token", 200);
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-6">
@@ -23,5 +27,14 @@ export default async function ResetPasswordPage({ searchParams }: PageProps<"/re
         </CardBody>
       </Card>
     </div>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function ResetPasswordPage(props: PageProps<"/reset-password">) {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <ResetPasswordPageContent {...props} />
+    </Suspense>
   );
 }

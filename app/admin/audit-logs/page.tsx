@@ -43,7 +43,7 @@ export default async function AdminAuditLogsPage({ searchParams }: PageProps<"/a
     <div>
       <PageHeader title="Audit log" description={`${total} entr${total === 1 ? "y" : "ies"}. Append-only record of administrative and financial actions.`} />
 
-      <form method="get" className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-white p-4" aria-label="Filter audit log">
+      <form method="get" className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-card p-4" aria-label="Filter audit log">
         <FilterField label="Action starts with" className="flex-1">
           <input name="q" defaultValue={q} placeholder="e.g. payment. or user.activate" className={adminInput} />
         </FilterField>

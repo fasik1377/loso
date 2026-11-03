@@ -1,11 +1,13 @@
+import { Suspense } from "react";
+import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { after } from "next/server";
+import { after, connection } from "next/server";
 import { Briefcase, Building2, CalendarClock, ExternalLink, Mail, MapPin, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
-import { jobAcceptsApplications } from "@/lib/domain/application";
+import { deadlinePassed, jobAcceptsApplications } from "@/lib/domain/application";
 import { formatRange } from "@/lib/money";
 import { formatDate, humanize } from "@/lib/format";
 import { fileUrl } from "@/lib/services/files";
@@ -16,7 +18,8 @@ import { ApplyForm } from "./apply-form";
 
 export const metadata: Metadata = { title: "Job details" };
 
-export default async function JobDetailPage({ params }: PageProps<"/jobs/[id]">) {
+async function JobDetailPageContent({ params }: PageProps<"/jobs/[id]">) {
+  await connection(); // live data: render per request
   const { id } = await params;
   const [job, user] = await Promise.all([
     db.job.findUnique({
@@ -40,7 +43,7 @@ export default async function JobDetailPage({ params }: PageProps<"/jobs/[id]">)
     after(() => db.job.update({ where: { id: job.id }, data: { viewCount: { increment: 1 } } }).catch(() => undefined));
   }
   const accepting = jobAcceptsApplications(job);
-  const isOpen = job.status === "PUBLISHED" && (!job.deadline || job.deadline.getTime() >= Date.now());
+  const isOpen = job.status === "PUBLISHED" && !deadlinePassed(job.deadline);
   const salary = job.salaryVisible ? formatRange(job.salaryMinMinor, job.salaryMaxMinor, job.currency) : null;
   const [existing, resumes] = user
     ? await Promise.all([
@@ -170,5 +173,14 @@ function Section({ title, text }: { title: string; text: string }) {
       {/* Rendered as text (React escapes it); line breaks preserved with CSS, no HTML injection. */}
       <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink/90">{text}</p>
     </section>
+  );
+}
+
+// Live data streams in behind Suspense so navigation shows the page shell instantly.
+export default function JobDetailPage(props: PageProps<"/jobs/[id]">) {
+  return (
+    <Suspense fallback={<SitePageSkeleton />}>
+      <JobDetailPageContent {...props} />
+    </Suspense>
   );
 }
