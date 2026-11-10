@@ -101,7 +101,7 @@ async function HomePageContent() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-brand-deep">
-        <AnimatedBackdrop />
+        <AnimatedBackdrop pattern="orbits" orbitCenter="72%" />
         <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 md:pt-14 lg:pb-24">
           <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
             <div>

@@ -220,6 +220,14 @@
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
   50% { transform: translate3d(14%, -18%, 0) rotate(40deg); }
 }
+/* Circular "orbits" backdrop: rings turn, job icons ride them, ripples spread from the centre. */
+@keyframes orbit-turn {
+  to { transform: rotate(360deg); }
+}
+@keyframes orbit-ripple {
+  from { transform: translate(-50%, -50%) scale(0.15); opacity: 0.6; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
 @keyframes grid-pan {
   to { background-position: 56px 56px; }
 }
