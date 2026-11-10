@@ -19,7 +19,7 @@ export async function registerAction(input: RegisterInput): Promise<ActionResult
     const { userId } = await registerUser(parsed.data);
     await createSession(userId);
     // Job seekers and employers wait for admin verification on the status page.
-    redirect(parsed.data.accountType === "CUSTOMER" ? "/dashboard" : "/account-status");
+    redirect("/account-status"); // every new account waits for admin approval
   });
 }
 

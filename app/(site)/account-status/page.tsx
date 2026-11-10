@@ -41,7 +41,7 @@ async function AccountStatusPageContent() {
       {stage !== "ACTIVE" && !["REJECTED", "SUSPENDED"].includes(stage) && (
         <div className="mt-4">
           <Alert tone="warning" title="Admin verification required">
-            Every job seeker and employer account is reviewed by a Looso administrator. You can only use Looso after your account is approved — we&apos;ll notify you here.
+            Every new Looso account is reviewed by an administrator. You can only use Looso after your account is approved — we&apos;ll notify you here.
           </Alert>
         </div>
       )}
@@ -130,8 +130,8 @@ async function AccountStatusPageContent() {
             </Step>
           )}
 
-          <Step n={needsFee && needsDocs ? 4 : 3} title="Account activation" state={stage === "AWAITING_ACTIVATION" ? "waiting" : "todo"}>
-            <p className="text-sm text-muted">After both checks pass, an administrator activates your account and you&apos;ll get a notification.</p>
+          <Step n={2 + (needsFee ? 1 : 0) + (needsDocs ? 1 : 0)} title="Admin approval" state={stage === "AWAITING_ACTIVATION" ? "waiting" : "todo"}>
+            <p className="text-sm text-muted">{needsFee || needsDocs ? "After the checks above pass, an" : "An"} administrator reviews and approves your account. You&apos;ll get a notification as soon as it is active.</p>
           </Step>
         </ol>
       )}

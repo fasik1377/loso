@@ -82,8 +82,12 @@ clearly say they are not real.
 There is no public admin registration route. On the server:
 
 ```bash
-SUPER_ADMIN_NAME="Full Name" SUPER_ADMIN_PHONE="09…" SUPER_ADMIN_PASSWORD="a-long-unique-passphrase-123" npm run admin:create
+SUPER_ADMIN_NAME="Full Name" SUPER_ADMIN_PHONE="09…" SUPER_ADMIN_PASSWORD="a-long-unique-passphrase-123" \
+SUPER_ADMIN_EMAIL="you@example.com" SUPER_ADMIN_USERNAME="your.name" npm run admin:create
 ```
+
+Email and username are optional. Everyone signs in on the same `/login` page with their phone number,
+email or username.
 
 Then sign in, open **Admin → Platform settings**, and set the real registration fee and the official
 payment instructions before accepting registrations. Super admins can grant ADMIN / MODERATOR roles
@@ -105,7 +109,7 @@ from the user detail page.
 
 **Worker registration** — account status, registration payment and identity verification are three
 separate records (`User.status`, `RegistrationPayment`, `VerificationSubmission`). The user-facing
-stage (Pending Payment → Payment Under Review → Pending Verification → Awaiting Activation → Active,
+stage (Pending Payment → Payment Under Review → Pending Verification → Awaiting Approval → Active,
 or Rejected / Suspended) is *derived* from them in `lib/domain/account.ts`.
 Activation requires a verified (or waived) payment **and** approved documents; it records who
 activated the account and when. Pending, rejected and suspended users can sign in, but they can
@@ -118,9 +122,9 @@ reference can be claimed only once (unique index on `(provider, providerReferenc
 conditional updates, so a payment cannot be processed twice. Verified payments get a receipt
 number. No card data is ever handled. **Nothing is marked as paid automatically.**
 
-**Customers** register for free and are active immediately. **Employers** are active so they can
-build their company profile, but the company must be verified before jobs can be published (this
-is configurable).
+**Every new account starts pending and must be approved by an administrator** before it can be used.
+Customers register for free (no fee, no documents) and appear under "Awaiting approval" on the admin
+overview. Employers upload business documents, and the company must be verified before jobs can be published.
 
 **Service requests**: Requested → Accepted → In Progress → Completed, plus Declined and Cancelled
 (`lib/domain/service-request.ts`). Only the worker can accept or start. Only the customer can

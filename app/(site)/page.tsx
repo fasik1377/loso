@@ -36,6 +36,7 @@ import { SpotlightPopup, type SpotlightItem } from "@/components/marketplace/spo
 import { CategoryMarquee } from "@/components/marketplace/category-marquee";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
+import { AnimatedBackdrop } from "@/components/ui/animated-backdrop";
 
 /** Hero shortcuts, in the same order as the translated `hero.popular` labels. */
 const POPULAR_LINKS = ["/services/electrical", "/services/plumbing", "/jobs?q=driver", "/jobs?category=administration-and-office", "/services/cleaning"];
@@ -100,6 +101,7 @@ async function HomePageContent() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-brand-deep">
+        <AnimatedBackdrop />
         <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 md:pt-14 lg:pb-24">
           <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
             <div>
@@ -200,8 +202,9 @@ async function HomePageContent() {
       </section>
 
       {/* Top rated */}
-      <section className="bg-card py-14">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section className="relative overflow-hidden bg-card py-14">
+        <AnimatedBackdrop tone="light" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal>
             <SectionHeading eyebrow={h.topEyebrow} title={h.topTitle} subtitle={h.topSubtitle} />
             <TopRatedShowcase data={top} t={t.spotlight} />
@@ -263,8 +266,9 @@ async function HomePageContent() {
       </section>
 
       {/* Benefits */}
-      <section className="bg-card py-14">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 md:grid-cols-3">
+      <section className="relative overflow-hidden bg-card py-14">
+        <AnimatedBackdrop tone="light" sparks={false} />
+        <div className="relative mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 md:grid-cols-3">
           {h.benefits.map((b, i) => {
             const Icon = [ShieldCheck, Star, Lock][i] ?? ShieldCheck;
             return (
@@ -303,6 +307,7 @@ async function HomePageContent() {
       {/* CTAs */}
       <section className="mx-auto grid max-w-7xl gap-4 px-4 pb-20 sm:px-6 md:grid-cols-2">
         <div className="relative overflow-hidden rounded-3xl bg-brand-deep p-8 text-white">
+          <AnimatedBackdrop />
           <h2 className="relative text-2xl font-bold">{h.ctaWorkerTitle}</h2>
           <p className="relative mt-2 text-white/80">{h.ctaWorkerText}</p>
           <ButtonLink href="/register" variant="gold" className="relative mt-6">
@@ -310,9 +315,10 @@ async function HomePageContent() {
           </ButtonLink>
         </div>
         <div className="relative overflow-hidden rounded-3xl border border-gold bg-gold-50 p-8">
-          <h2 className="text-2xl font-bold text-brand">{h.ctaEmployerTitle}</h2>
-          <p className="mt-2 text-ink/80">{h.ctaEmployerText}</p>
-          <ButtonLink href="/register?type=employer" className="mt-6">
+          <AnimatedBackdrop tone="light" />
+          <h2 className="relative text-2xl font-bold text-brand">{h.ctaEmployerTitle}</h2>
+          <p className="relative mt-2 text-ink/80">{h.ctaEmployerText}</p>
+          <ButtonLink href="/register?type=employer" className="relative mt-6">
             {h.ctaEmployerButton} <ArrowRight className="h-4 w-4" />
           </ButtonLink>
         </div>

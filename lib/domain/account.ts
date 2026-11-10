@@ -106,9 +106,9 @@ export const STAGE_INFO: Record<AccountStage, { label: string; tone: "neutral" |
     help: "A reviewer asked for corrected information. See the note below and resubmit.",
   },
   AWAITING_ACTIVATION: {
-    label: "Awaiting Activation",
+    label: "Awaiting Approval",
     tone: "neutral",
-    help: "All checks have passed. An administrator will activate your account shortly.",
+    help: "Your registration is complete. An administrator will review and approve your account shortly.",
   },
   ACTIVE: { label: "Active", tone: "success", help: "Your account is active." },
   REJECTED: {

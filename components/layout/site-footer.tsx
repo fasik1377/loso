@@ -1,3 +1,4 @@
+import { AnimatedBackdrop } from "@/components/ui/animated-backdrop";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Logo } from "@/components/brand/logo";
@@ -66,11 +67,14 @@ async function FooterContent() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto bg-brand-deep text-white">
-      <div aria-hidden="true" className="tilet opacity-70" />
-      <Suspense fallback={<div className="h-64" />}>
-        <FooterContent />
-      </Suspense>
+    <footer className="relative mt-auto overflow-hidden bg-brand-deep text-white">
+      <AnimatedBackdrop sparks={false} />
+      <div aria-hidden="true" className="tilet relative opacity-70" />
+      <div className="relative">
+        <Suspense fallback={<div className="h-64" />}>
+          <FooterContent />
+        </Suspense>
+      </div>
     </footer>
   );
 }

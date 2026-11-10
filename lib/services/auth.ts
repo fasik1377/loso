@@ -21,7 +21,7 @@ const RESET_TTL_MS = 60 * 60 * 1000;
  * Registration policy:
  *  - WORKER:   account PENDING; registration fee obligation created from current settings;
  *              must pay (staff-verified) AND pass document verification before activation.
- *  - CUSTOMER: ACTIVE immediately (no fee). Abuse is handled through reports + suspension.
+ *  - CUSTOMER: account PENDING (no fee, no documents); an administrator approves it before use.
  *  - EMPLOYER: account PENDING; must upload business documents and be verified + activated by
  *              an administrator before using Looso. The company starts as PENDING_REVIEW.
  * Staff roles are never assignable here.
@@ -49,9 +49,8 @@ export async function registerUser(data: RegisterData): Promise<{ userId: string
         phone: data.phone,
         email: data.email ?? null,
         passwordHash,
-        // Job seekers and employers need admin verification; only customers start active.
-        status: data.accountType === "CUSTOMER" ? "ACTIVE" : "PENDING",
-        activatedAt: data.accountType === "CUSTOMER" ? new Date() : null,
+        // Every new account must be approved by an administrator before it can use Looso.
+        status: "PENDING",
         roles: { create: roles.map((role) => ({ role })) },
         profile: { create: {} },
       },
@@ -93,13 +92,19 @@ export async function registerUser(data: RegisterData): Promise<{ userId: string
   return { userId: user.id };
 }
 
+/** Sign-in identifier → lookup: an email (has "@"), a phone number, or a username. */
+function identifierWhere(identifier: string) {
+  const id = identifier.trim();
+  if (id.includes("@")) return { email: id.toLowerCase() };
+  const phone = normalizePhone(id);
+  if (phone) return { phone };
+  return { username: id.toLowerCase() };
+}
+
 /** Returns the user id on success. Generic error messages avoid revealing which accounts exist. */
-export async function authenticate(phoneOrEmail: string, password: string): Promise<string> {
-  const phone = normalizePhone(phoneOrEmail);
-  const user = await db.user.findFirst({
-    where: phone ? { phone } : { email: phoneOrEmail.toLowerCase() },
-  });
-  const invalid = new AppError("Incorrect phone/email or password.", "UNAUTHORIZED");
+export async function authenticate(identifier: string, password: string): Promise<string> {
+  const user = await db.user.findFirst({ where: identifierWhere(identifier) });
+  const invalid = new AppError("Incorrect sign-in details or password.", "UNAUTHORIZED");
 
   if (!user) {
     await verifyPassword(password, DUMMY_HASH); // equalize timing
@@ -132,8 +137,7 @@ export async function authenticate(phoneOrEmail: string, password: string): Prom
  * Returns the raw token (caller decides how to deliver) or null when no such account exists.
  */
 export async function createPasswordReset(phoneOrEmail: string): Promise<{ userId: string; token: string } | null> {
-  const phone = normalizePhone(phoneOrEmail);
-  const user = await db.user.findFirst({ where: phone ? { phone } : { email: phoneOrEmail.toLowerCase() }, select: { id: true } });
+  const user = await db.user.findFirst({ where: identifierWhere(phoneOrEmail), select: { id: true } });
   if (!user) return null;
   const token = generateToken();
   await db.$transaction([

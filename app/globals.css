@@ -133,10 +133,116 @@
   }
 }
 
-/* Slow documentary-style zoom while a photo is on screen. */
+/* Hero mosaic swap transitions — each swap uses a different one. */
+@keyframes mosaic-iris {
+  from { clip-path: circle(0% at 50% 50%); }
+  to { clip-path: circle(75% at 50% 50%); }
+}
+@keyframes mosaic-slide {
+  from { clip-path: inset(0 0 0 100%); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes mosaic-focus {
+  from { opacity: 0; transform: scale(1.25); filter: blur(10px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+/* Card flips: the old photo turns away, the new one turns in. */
+@keyframes mosaic-flip-y-out {
+  from { transform: perspective(900px) rotateY(0deg); }
+  to { transform: perspective(900px) rotateY(90deg); }
+}
+@keyframes mosaic-flip-y-in {
+  from { transform: perspective(900px) rotateY(-90deg); }
+  to { transform: perspective(900px) rotateY(0deg); }
+}
+@keyframes mosaic-flip-x-out {
+  from { transform: perspective(900px) rotateX(0deg); }
+  to { transform: perspective(900px) rotateX(-90deg); }
+}
+@keyframes mosaic-flip-x-in {
+  from { transform: perspective(900px) rotateX(90deg); }
+  to { transform: perspective(900px) rotateX(0deg); }
+}
+/* Fly-ins: the new photo flies across the grid and lands in its tile. */
+@keyframes mosaic-fly-a {
+  from { opacity: 0; transform: translate3d(120%, -90%, 0) rotate(18deg) scale(0.45); }
+  45% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mosaic-fly-b {
+  from { opacity: 0; transform: translate3d(-110%, 100%, 0) rotate(-16deg) scale(0.5); }
+  45% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+/* Light sweep across a freshly revealed photo. */
+@keyframes mosaic-shine {
+  from { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: translateX(260%) skewX(-18deg); opacity: 0; }
+}
+/* Tiles fly in from scattered directions (per-tile --fx/--fy/--fr), flipping as they land. */
+@keyframes mosaic-enter {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translate3d(var(--fx, 0), var(--fy, 40px), 0) rotate(var(--fr, 0deg)) rotateY(var(--fflip, 0deg)) scale(0.6);
+  }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+
+/* Dashboard bars grow in from their baseline. */
+@keyframes bar-grow-y {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes bar-grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Sign-in photo deck: the front card flies off the stack. */
+@keyframes card-fly-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translate3d(130%, -25%, 0) rotate(24deg) scale(0.9); }
+}
+
+/* ── Animated backdrops (hero, auth, CTA bands, admin banner) ── */
+@keyframes aurora-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(18%, 10%, 0) scale(1.18); }
+  66% { transform: translate3d(-10%, 16%, 0) scale(0.92); }
+}
+@keyframes aurora-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); }
+  50% { transform: translate3d(-22%, -12%, 0) scale(0.86); }
+}
+@keyframes aurora-c {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(14%, -18%, 0) rotate(40deg); }
+}
+@keyframes grid-pan {
+  to { background-position: 56px 56px; }
+}
+@keyframes spark-rise {
+  0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translate3d(var(--dx, 0px), -320px, 0) scale(1.1); opacity: 0; }
+}
+@keyframes beam-sweep {
+  0% { transform: translateX(-80%) rotate(18deg); opacity: 0; }
+  20%, 60% { opacity: 1; }
+  100% { transform: translateX(180%) rotate(18deg); opacity: 0; }
+}
+/* Gentle independent floating of each tile. */
+@keyframes mosaic-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+/* Slow documentary-style zoom while a photo is on screen (direction via --kb-x / --kb-y). */
 @keyframes ken-burns {
   from {
-    transform: scale(1.14) translate3d(1.5%, 1%, 0);
+    transform: scale(1.16) translate3d(var(--kb-x, 1.5%), var(--kb-y, 1%), 0);
   }
   to {
     transform: scale(1) translate3d(0, 0, 0);

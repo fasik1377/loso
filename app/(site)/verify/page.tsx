@@ -21,7 +21,7 @@ async function VerifyPageContent() {
       <h2>Employers</h2>
       <p>Employers upload a business license or registration document after signing up. An administrator must verify it before the employer account can be used to post jobs.</p>
       <h2>Customers</h2>
-      <p>Customer accounts are free and active immediately. Abuse is handled through reports and moderation.</p>
+      <p>Customer accounts are free, but like every account they are approved by an administrator before they can be used.</p>
       <ButtonLink href={user.roles.includes("EMPLOYER") ? "/employer/company" : "/dashboard"}>Back to dashboard</ButtonLink>
     </ProsePage>
   );

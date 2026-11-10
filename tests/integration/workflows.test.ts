@@ -48,6 +48,13 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
     return userId;
   }
 
+  /** A registered customer that an administrator has approved. */
+  async function activeCustomer() {
+    const id = await register("CUSTOMER");
+    await db.user.update({ where: { id }, data: { status: "ACTIVE", activatedAt: new Date() } });
+    return sessionUser(id);
+  }
+
   async function staff(role: "ADMIN" | "MODERATOR" = "ADMIN") {
     const u = await db.user.create({
       data: { fullName: `Test ${role}`, phone: phone(), passwordHash: "x", status: "ACTIVE", roles: { create: [{ role }] } },
@@ -142,17 +149,22 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
     await expect(accounts.setAccountStatus(admin, admin.id, "suspend", "x")).rejects.toThrow(/own account/);
   });
 
-  it("customers are active immediately and are not charged a registration fee", async () => {
+  it("customers pay no fee but still need admin approval before using Looso", async () => {
+    const admin = await staff();
     const id = await register("CUSTOMER");
-    const snap = await accounts.getAccountSnapshot(id);
-    expect(snap.user.status).toBe("ACTIVE");
+    let snap = await accounts.getAccountSnapshot(id);
+    expect(snap.user.status).toBe("PENDING");
+    expect(snap.stage).toBe("AWAITING_ACTIVATION");
     expect(snap.payment).toBeNull();
+    await accounts.activateUser(admin, id);
+    snap = await accounts.getAccountSnapshot(id);
+    expect(snap.user.status).toBe("ACTIVE");
   });
 
   it("service request lifecycle and one review per completed request", async () => {
     const { user: worker, categoryId } = await activeWorker();
-    const customer = await sessionUser(await register("CUSTOMER"));
-    const stranger = await sessionUser(await register("CUSTOMER"));
+    const customer = await activeCustomer();
+    const stranger = await activeCustomer();
 
     const req = await sr.createServiceRequest(customer, { workerId: worker.id, categoryId, title: "Fix sink", description: "Kitchen sink is leaking badly", preferredAt: undefined, locationId: undefined, addressDetail: undefined, budget: undefined }, []);
     expect(req.status).toBe("REQUESTED");
@@ -226,8 +238,8 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
 
   it("messages are persisted and private to participants", async () => {
     const { user: worker } = await activeWorker();
-    const customer = await sessionUser(await register("CUSTOMER"));
-    const stranger = await sessionUser(await register("CUSTOMER"));
+    const customer = await activeCustomer();
+    const stranger = await activeCustomer();
     const convo = await messaging.startDirectConversation(customer, worker.id);
     await messaging.sendMessage(customer, convo, "Hello, are you available tomorrow?");
     expect(await messaging.unreadMessageCount(worker.id)).toBe(1);
@@ -240,7 +252,7 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
 
   it("private files are not readable by other users", async () => {
     const owner = await register("WORKER");
-    const stranger = await sessionUser(await register("CUSTOMER"));
+    const stranger = await activeCustomer();
     const moderator = await staff("MODERATOR");
     const f = await db.storedFile.create({ data: { ownerId: owner, storageKey: `test/${run}/pp.pdf`, originalName: "p.pdf", mimeType: "application/pdf", sizeBytes: 1, purpose: "PAYMENT_PROOF" } });
     expect(await files.canReadFile(stranger, f.id)).toBeNull();

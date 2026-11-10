@@ -46,6 +46,8 @@ model User {
   fullName       String
   phone          String        @unique // E.164
   email          String? // unique per user, enforced in application code
+  /// Optional sign-in name (lowercase, starts with a letter); unique, enforced in application code.
+  username       String?
   passwordHash   String
   status         AccountStatus @default(PENDING)
   statusReason   String?

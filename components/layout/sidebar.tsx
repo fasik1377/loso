@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatedBackdrop } from "@/components/ui/animated-backdrop";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
@@ -134,7 +135,10 @@ export function Sidebar({ groups }: { groups: NavGroup[] }) {
       >
         <Menu className="h-6 w-6" />
       </button>
-      <aside className="hidden w-64 shrink-0 bg-brand-deep px-3 py-6 lg:block">{nav}</aside>
+      <aside className="relative hidden w-64 shrink-0 overflow-hidden bg-brand-deep px-3 py-6 lg:block">
+        <AnimatedBackdrop sparks={false} />
+        <div className="relative">{nav}</div>
+      </aside>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
