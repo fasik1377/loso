@@ -12,7 +12,7 @@ export function ErrorView({ retry, digest }: { retry: () => void; digest?: strin
       </span>
       <h1 className="mt-5 text-2xl font-bold text-ink">We couldn&apos;t load this page</h1>
       <p className="mt-2 text-muted">
-        Loso is having trouble reaching its services right now. Please check your internet connection and try again in a moment.
+        Looso is having trouble reaching its services right now. Please check your internet connection and try again in a moment.
       </p>
       <div className="mt-6 flex gap-3">
         <Button onClick={retry}>

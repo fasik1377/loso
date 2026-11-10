@@ -93,7 +93,7 @@ export const STAGE_INFO: Record<AccountStage, { label: string; tone: "neutral" |
   PENDING_DOCUMENTS: {
     label: "Documents Required",
     tone: "warning",
-    help: "Upload your documents so an administrator can verify your account. You can't use Loso until it is approved.",
+    help: "Upload your documents so an administrator can verify your account. You can't use Looso until it is approved.",
   },
   PENDING_VERIFICATION: {
     label: "Pending Verification",

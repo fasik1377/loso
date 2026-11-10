@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   serverExternalPackages: ["@aws-sdk/client-s3"],
+  // Prisma's runtime uses dynamic fs access, which makes the tracer include the whole project in
+  // every server function. Keep static assets (served by the CDN), local uploads and dev caches out.
+  outputFileTracingExcludes: {
+    "/*": ["public/**/*", "storage/**/*", ".next/dev/**/*", ".git/**/*", "tests/**/*"],
+  },
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

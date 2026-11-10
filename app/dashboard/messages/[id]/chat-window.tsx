@@ -89,7 +89,7 @@ export function ChatWindow({ conversationId, currentUserId, initial }: { convers
   };
 
   const report = async (messageId: string) => {
-    if (!confirm("Report this message to Loso moderators?")) return;
+    if (!confirm("Report this message to Looso moderators?")) return;
     const fd = new FormData();
     fd.set("targetType", "MESSAGE");
     fd.set("targetId", messageId);

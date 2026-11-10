@@ -11,6 +11,7 @@ import type { Prisma } from "@/lib/generated/prisma";
 import type { SessionUser } from "@/lib/auth/session";
 import type { applicationSchema, jobSchema } from "@/lib/validation/schemas";
 import { ensureConversation } from "./messaging";
+import { slugify } from "@/lib/format";
 
 type JobData = z.output<typeof jobSchema>;
 
@@ -60,6 +61,64 @@ async function publishTarget(companyStatus: string): Promise<JobStatus> {
   }
   if (companyStatus === "SUSPENDED" || companyStatus === "REJECTED") throw forbidden("Your company cannot publish jobs.");
   return settings.requireJobReview ? "PENDING_REVIEW" : "PUBLISHED";
+}
+
+/**
+ * Staff post a vacancy on behalf of an approved employer, or for a new employer profile they
+ * create (owned by the staff member, so applications reach them). The job is attributed to the
+ * company owner, so the employer receives applications in their own dashboard.
+ */
+export async function createStaffJob(
+  actor: SessionUser,
+  d: JobData,
+  publish: boolean,
+  target: { companyId?: string; newCompanyName?: string },
+) {
+  if (d.deadline && d.deadline < new Date()) throw new AppError("The deadline must be in the future.");
+  const name = target.newCompanyName?.trim();
+  if (!name && !target.companyId) throw new AppError("Choose an employer or enter a new employer name.");
+
+  return db.$transaction(async (tx) => {
+    let company;
+    if (name) {
+      company = await tx.company.create({
+        data: {
+          ownerId: actor.id,
+          name,
+          slug: `${slugify(name) || "employer"}-${Date.now().toString(36)}`,
+          status: "APPROVED",
+          verifiedAt: new Date(),
+          verifiedById: actor.id,
+          members: { create: { userId: actor.id, role: "OWNER" } },
+        },
+      });
+      // Lets the staff member manage applicants for this employer from the employer dashboard.
+      await tx.userRole.upsert({ where: { userId_role: { userId: actor.id, role: "EMPLOYER" } }, create: { userId: actor.id, role: "EMPLOYER", grantedById: actor.id }, update: {} });
+      await audit({ actorId: actor.id, action: "company.staff_create", entityType: "Company", entityId: company.id, metadata: { name } }, tx);
+    } else {
+      company = await tx.company.findUnique({ where: { id: target.companyId! } });
+      if (!company) throw notFound("Employer not found.");
+      if (company.status !== "APPROVED") throw conflict("Jobs can only be posted for verified employers.");
+    }
+
+    const status: JobStatus = publish ? "PUBLISHED" : "DRAFT";
+    const job = await tx.job.create({
+      data: {
+        ...jobFields(d),
+        companyId: company.id,
+        postedById: company.ownerId,
+        status,
+        publishedAt: status === "PUBLISHED" ? new Date() : null,
+        skills: { create: d.skillIds.map((skillId) => ({ skillId })) },
+        questions: { create: d.questions.map((prompt, i) => ({ prompt, sortOrder: i })) },
+      },
+    });
+    await audit({ actorId: actor.id, action: "job.staff_create", entityType: "Job", entityId: job.id, metadata: { companyId: company.id, status } }, tx);
+    if (company.ownerId !== actor.id) {
+      await notify({ userId: company.ownerId, type: "JOB", title: `Looso posted a job for ${company.name}: ${job.title}`, body: "Applications will appear in your employer dashboard.", link: `/jobs/${job.id}` }, tx);
+    }
+    return job;
+  });
 }
 
 export async function createJob(user: SessionUser, d: JobData, publish: boolean) {

@@ -52,7 +52,7 @@ export function BasicProfileForm({
           options={[
             { value: "HIDDEN", label: "Nobody — messages only" },
             { value: "CONNECTIONS", label: "Only people I'm working with (accepted requests, shortlisted applications)" },
-            { value: "REGISTERED_USERS", label: "Any signed-in Loso user" },
+            { value: "REGISTERED_USERS", label: "Any signed-in Looso user" },
           ]}
         />
       </Field>

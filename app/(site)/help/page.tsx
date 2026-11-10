@@ -7,15 +7,15 @@ export const metadata: Metadata = { title: "Help center" };
 const FAQ = [
   {
     q: "Why do workers pay a registration fee?",
-    a: "The fee covers manual verification of each worker's identity and documents. The amount is set by Loso administrators and shown on your account status page before you pay.",
+    a: "The fee covers manual verification of each worker's identity and documents. The amount is set by Looso administrators and shown on your account status page before you pay.",
   },
   {
     q: "How long does verification take?",
     a: "After you submit your payment reference and identity document, a staff member reviews both. You will receive a notification with the decision. Paying alone does not activate an account — the documents must also be approved.",
   },
   {
-    q: "Do customers pay to use Loso?",
-    a: "No. Customer accounts are free. Payment for a service is agreed directly between you and the worker; Loso does not collect service payments.",
+    q: "Do customers pay to use Looso?",
+    a: "No. Customer accounts are free. Payment for a service is agreed directly between you and the worker; Looso does not collect service payments.",
   },
   {
     q: "Who can review a worker?",
@@ -27,13 +27,13 @@ const FAQ = [
   },
   {
     q: "How do employers publish jobs?",
-    a: "Register as an employer, complete your company profile and submit your business documents. Once Loso verifies the company, you can publish vacancies.",
+    a: "Register as an employer, complete your company profile and submit your business documents. Once Looso verifies the company, you can publish vacancies.",
   },
 ];
 
 export default function HelpPage() {
   return (
-    <ProsePage title="Help center" intro="Answers to common questions about using Loso.">
+    <ProsePage title="Help center" intro="Answers to common questions about using Looso.">
       {FAQ.map((f) => (
         <section key={f.q}>
           <h2>{f.q}</h2>
@@ -43,10 +43,10 @@ export default function HelpPage() {
       <section id="safety" className="scroll-mt-20">
         <h2>Trust & safety tips</h2>
         <ul className="mt-2">
-          <li>Keep conversations inside Loso until you trust the other person.</li>
+          <li>Keep conversations inside Looso until you trust the other person.</li>
           <li>Never send money in advance to someone you have not met for a job offer. Real employers do not charge application fees.</li>
           <li>Meet in safe, public places for interviews and agree on prices before work starts.</li>
-          <li>Loso staff will never ask for your password.</li>
+          <li>Looso staff will never ask for your password.</li>
           <li>Use the &ldquo;Report&rdquo; link on any profile, job, review or message that seems fraudulent, abusive or unsafe.</li>
         </ul>
       </section>

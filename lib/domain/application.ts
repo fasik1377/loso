@@ -31,7 +31,7 @@ export function jobAcceptsApplications(
 ): { ok: true } | { ok: false; reason: string } {
   if (job.status !== "PUBLISHED") return { ok: false, reason: "This job is not accepting applications." };
   if (job.deadline && job.deadline.getTime() < now.getTime()) return { ok: false, reason: "The application deadline has passed." };
-  if (job.applicationMethod !== "IN_APP") return { ok: false, reason: "This employer accepts applications outside Loso." };
+  if (job.applicationMethod !== "IN_APP") return { ok: false, reason: "This employer accepts applications outside Looso." };
   return { ok: true };
 }
 

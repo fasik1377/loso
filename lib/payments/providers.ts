@@ -22,7 +22,7 @@ export interface PaymentProvider {
 
 export const manualProvider: PaymentProvider = {
   id: "manual",
-  label: "Manual transfer (reviewed by Loso staff)",
+  label: "Manual transfer (reviewed by Looso staff)",
   kind: "manual",
   isConfigured: () => true,
 };
@@ -30,7 +30,7 @@ export const manualProvider: PaymentProvider = {
 export const MANUAL_METHODS = [
   { id: "bank_transfer", label: "Bank transfer / deposit" },
   { id: "telebirr_transfer", label: "Telebirr transfer to merchant number" },
-  { id: "cash_office", label: "Cash at Loso office (receipt number)" },
+  { id: "cash_office", label: "Cash at Looso office (receipt number)" },
 ] as const;
 
 export function availableProviders(): PaymentProvider[] {

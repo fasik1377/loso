@@ -68,6 +68,7 @@ export function navFor(roles: Role[]): NavGroup[] {
       { href: "/admin/payments", label: "Payments", icon: "wallet", perm: "payments.review" },
       { href: "/admin/users", label: "Users", icon: "users", perm: "users.view" },
       { href: "/admin/jobs", label: "Jobs & companies", icon: "briefcase", perm: "content.moderate" },
+      { href: "/admin/jobs/new", label: "Post a job", icon: "plus", perm: "jobs.post" },
       { href: "/admin/services", label: "Services", icon: "wrench", perm: "content.moderate" },
       { href: "/admin/reviews", label: "Reviews", icon: "star", perm: "content.moderate" },
       { href: "/admin/reports", label: "Reports & support", icon: "flag", perm: "reports.handle" },

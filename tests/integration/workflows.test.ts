@@ -109,7 +109,7 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
 
     snap = await accounts.getAccountSnapshot(id);
     expect(snap.payment?.status).toBe("VERIFIED");
-    expect(snap.payment?.receiptNumber).toMatch(/^LOSO-R-/);
+    expect(snap.payment?.receiptNumber).toMatch(/^LOOSO-R-/);
     expect(snap.user.status).toBe("PENDING"); // payment alone does not activate
     expect(snap.stage).toBe("PENDING_DOCUMENTS");
     await expect(accounts.activateUser(admin, id)).rejects.toThrow(/verification/i);
@@ -189,7 +189,7 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
 
   it("employer must be verified to publish; applications are unique", async () => {
     const employer = await sessionUser(await register("EMPLOYER"));
-    // Employers start pending: an administrator must verify them before they can use Loso.
+    // Employers start pending: an administrator must verify them before they can use Looso.
     expect(employer.status).toBe("PENDING");
     expect((await accounts.getAccountSnapshot(employer.id)).stage).toBe("PENDING_DOCUMENTS");
     const { user: worker } = await activeWorker();

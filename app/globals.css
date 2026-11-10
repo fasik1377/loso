@@ -41,6 +41,7 @@
   --animate-drift: drift 18s ease-in-out infinite alternate;
   --animate-shimmer: shimmer 6s linear infinite;
   --animate-word-in: word-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-scroll-up: scroll-up 50s linear infinite;
 }
 
 @keyframes fade-up {
@@ -111,6 +112,12 @@
     opacity: 1;
     transform: none;
     filter: none;
+  }
+}
+
+@keyframes scroll-up {
+  to {
+    transform: translateY(-50%);
   }
 }
 

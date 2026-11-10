@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Briefcase } from "lucide-react";
 import { requirePermissionPage } from "@/lib/auth/guards";
+import { hasPermission } from "@/lib/domain/permissions";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma";
 import type { CompanyStatus, JobStatus } from "@/lib/generated/prisma";
@@ -19,7 +20,7 @@ const JOB_STATUSES: readonly JobStatus[] = ["PENDING_REVIEW", "PUBLISHED", "DRAF
 const COMPANY_STATUSES: readonly CompanyStatus[] = ["PENDING_REVIEW", "APPROVED", "REJECTED", "SUSPENDED"];
 
 export default async function AdminJobsPage({ searchParams }: PageProps<"/admin/jobs">) {
-  await requirePermissionPage("content.moderate");
+  const viewer = await requirePermissionPage("content.moderate");
   const sp = await searchParams;
   const q = str(sp, "q");
   const status = JOB_STATUSES.find((s) => s === str(sp, "status"));
@@ -58,7 +59,11 @@ export default async function AdminJobsPage({ searchParams }: PageProps<"/admin/
 
   return (
     <div>
-      <PageHeader title="Jobs & companies" description="Approve, remove or feature job posts and manage employer companies." />
+      <PageHeader
+        title="Jobs & companies"
+        description="Approve, remove or feature job posts and manage employer companies."
+        actions={hasPermission(viewer.roles, "jobs.post") ? <Link href="/admin/jobs/new" className={buttonClass("gold", "md")}>Post a job</Link> : undefined}
+      />
 
       <SectionTitle title={`Jobs (${jobTotal})`} />
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-card p-4" aria-label="Filter jobs">

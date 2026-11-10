@@ -6,7 +6,7 @@ import { ActionForm, Field, Input, Select, SubmitButton } from "@/components/ui/
 const METHODS = [
   { value: "bank_transfer", label: "Bank transfer / deposit" },
   { value: "telebirr_transfer", label: "Telebirr transfer" },
-  { value: "cash_office", label: "Cash at Loso office" },
+  { value: "cash_office", label: "Cash at Looso office" },
 ];
 
 export function PaymentForm() {

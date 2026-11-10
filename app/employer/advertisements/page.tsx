@@ -22,10 +22,10 @@ export default async function AdvertisementsPage({ searchParams }: PageProps<"/e
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Advertising" description="Promote your business on Loso. Every ad is reviewed before it goes live and is clearly labelled “Sponsored”." />
+      <PageHeader title="Advertising" description="Promote your business on Looso. Every ad is reviewed before it goes live and is clearly labelled “Sponsored”." />
       {str(sp, "created") && <Alert tone="success">Advertisement submitted. You&apos;ll be notified when it is reviewed.</Alert>}
       <Alert title="Payment for advertising">
-        Advertising is billed separately from worker registration fees. Online ad payments are not enabled yet — Loso staff will contact you with pricing and payment instructions after review.
+        Advertising is billed separately from worker registration fees. Online ad payments are not enabled yet — Looso staff will contact you with pricing and payment instructions after review.
       </Alert>
 
       {ads.length === 0 ? (

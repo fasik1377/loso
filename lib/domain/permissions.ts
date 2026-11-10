@@ -12,6 +12,7 @@ export const PERMISSIONS = [
   "verifications.review",
   "payments.review",
   "content.moderate", // jobs, reviews, messages after report, companies
+  "jobs.post", // publish vacancies on behalf of employers
   "reports.handle",
   "taxonomy.manage", // categories, skills, locations
   "ads.manage",
@@ -31,6 +32,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "verifications.review",
     "payments.review",
     "content.moderate",
+    "jobs.post",
     "reports.handle",
     "taxonomy.manage",
     "ads.manage",

@@ -10,6 +10,6 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/ads/[id]/cli
   const slot = SLOTS.find((s) => s === slotParam) ?? "HOME";
   const ad = await recordAdEvent(id, "CLICK", slot);
   const dest = sanitizeDestinationUrl(ad?.destinationUrl);
-  // Sponsored jobs open the job page on Loso; other ads go to their sanitized external link.
+  // Sponsored jobs open the job page on Looso; other ads go to their sanitized external link.
   return NextResponse.redirect(dest ?? new URL(ad?.jobId ? `/jobs/${ad.jobId}` : "/", req.url), 302);
 }

@@ -10,7 +10,7 @@ import { notifyMany } from "@/lib/notifications";
 import { slugify } from "@/lib/format";
 import { activateUser, reviewRegistrationPayment, reviewVerification, setAccountStatus, setStaffRole } from "@/lib/services/accounts";
 import { createPasswordReset } from "@/lib/services/auth";
-import { moderateJob } from "@/lib/services/jobs";
+import { createStaffJob, moderateJob } from "@/lib/services/jobs";
 import { moderateReview } from "@/lib/services/service-requests";
 import { createStaffAdvertisement, moderateAdvertisement } from "@/lib/services/ads";
 import { moderateCompanyReview } from "@/lib/services/companies";
@@ -19,7 +19,7 @@ import { redirect } from "next/navigation";
 import { hideReportedMessage, resolveReport } from "@/lib/services/moderation";
 import { getSettings, settingsSchema } from "@/lib/settings";
 import { appUrl } from "@/lib/config";
-import { categorySchema, formToObject, staffAdvertisementSchema } from "@/lib/validation/schemas";
+import { categorySchema, formToObject, jobSchema, staffAdvertisementSchema, type JobInput } from "@/lib/validation/schemas";
 import { invalid, safeAction } from "./safe";
 
 const note = (form: FormData) => String(form.get("note") ?? "").trim().slice(0, 1000) || undefined;
@@ -86,6 +86,21 @@ export async function issueResetLinkAction(_: ActionResult | null, form: FormDat
     const reset = await createPasswordReset(user.phone);
     await audit({ actorId: actor.id, action: "user.reset_link_issued", entityType: "User", entityId: user.id });
     return { ok: true, message: `One-time reset link (valid 1 hour). Share it only after confirming the person's identity: ${appUrl}/reset-password?token=${reset!.token}` };
+  });
+}
+
+/** Staff publish a vacancy for an employer (called from the shared React Hook Form job form). */
+export async function adminSaveJobAction(input: JobInput & { publish: boolean; companyId?: string; newCompanyName?: string }): Promise<ActionResult<{ id: string }>> {
+  return safeAction<{ id: string }>(async () => {
+    const actor = await assertPermission("jobs.post");
+    const parsed = jobSchema.safeParse(input);
+    if (!parsed.success) return invalid(parsed.error);
+    const companyId = typeof input.companyId === "string" ? input.companyId.slice(0, 40) : undefined;
+    const newCompanyName = typeof input.newCompanyName === "string" ? input.newCompanyName.slice(0, 120) : undefined;
+    const job = await createStaffJob(actor, parsed.data, input.publish, { companyId, newCompanyName });
+    revalidatePath("/admin/jobs");
+    revalidatePath("/jobs");
+    return { ok: true, message: job.status === "PUBLISHED" ? "Job published." : "Draft saved.", data: { id: job.id } };
   });
 }
 

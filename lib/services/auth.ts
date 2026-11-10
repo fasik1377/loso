@@ -23,7 +23,7 @@ const RESET_TTL_MS = 60 * 60 * 1000;
  *              must pay (staff-verified) AND pass document verification before activation.
  *  - CUSTOMER: ACTIVE immediately (no fee). Abuse is handled through reports + suspension.
  *  - EMPLOYER: account PENDING; must upload business documents and be verified + activated by
- *              an administrator before using Loso. The company starts as PENDING_REVIEW.
+ *              an administrator before using Looso. The company starts as PENDING_REVIEW.
  * Staff roles are never assignable here.
  */
 export async function registerUser(data: RegisterData): Promise<{ userId: string }> {

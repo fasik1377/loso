@@ -8,10 +8,14 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { saveJobAction } from "@/lib/actions/employer";
 import { jobSchema, type JobInput } from "@/lib/validation/schemas";
 import { Alert, Button } from "@/components/ui/primitives";
+import type { ActionResult } from "@/lib/errors";
 import { Field, inputClass } from "@/components/ui/form";
 
 type Option = { value: string; label: string };
 type FormValues = JobInput;
+
+export type JobSavePayload = JobInput & { jobId?: string; publish: boolean; companyId?: string; newCompanyName?: string };
+export type JobSaveAction = (input: JobSavePayload) => Promise<ActionResult<{ id: string }>>;
 
 const EMPLOYMENT = ["FULL_TIME", "PART_TIME", "CONTRACT", "TEMPORARY", "INTERNSHIP", "VOLUNTEER", "DAILY_LABOR"];
 const LEVELS = ["ENTRY", "JUNIOR", "MID", "SENIOR", "MANAGER"];
@@ -25,6 +29,9 @@ export function JobForm({
   skills,
   canPublish,
   questionsLocked,
+  companyOptions,
+  saveAction = saveJobAction,
+  redirectTo = "/employer/jobs",
 }: {
   jobId?: string;
   defaults?: Partial<FormValues>;
@@ -33,7 +40,13 @@ export function JobForm({
   skills: Option[];
   canPublish: boolean;
   questionsLocked?: boolean;
+  /** Admin mode: choose which (approved) company the job is posted for, or create one. */
+  companyOptions?: Option[];
+  saveAction?: JobSaveAction;
+  redirectTo?: string;
 }) {
+  const [companyId, setCompanyId] = useState(companyOptions?.[0]?.value ?? "");
+  const [newCompanyName, setNewCompanyName] = useState("");
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -68,13 +81,13 @@ export function JobForm({
       // Send the raw form input; the server re-validates and applies the same transforms.
       const raw = getValues();
       startTransition(async () => {
-        const res = await saveJobAction({ ...raw, jobId, publish });
+        const res = await saveAction({ ...raw, jobId, publish, ...(companyOptions ? { companyId: companyId || undefined, newCompanyName: newCompanyName.trim() || undefined } : {}) });
         if (!res.ok) {
           setServerError(res.error);
           for (const [f, m] of Object.entries(res.fieldErrors ?? {})) if (m?.[0]) setError(f as keyof FormValues, { message: m[0] });
           return;
         }
-        router.push("/employer/jobs");
+        router.push(redirectTo);
         router.refresh();
       });
     });
@@ -85,6 +98,25 @@ export function JobForm({
     <form className="space-y-6" noValidate onSubmit={submit(false)}>
       {serverError && <Alert tone="danger">{serverError}</Alert>}
       {!canPublish && <Alert tone="warning">Your company is not verified yet, so you can only save drafts. Publish after verification.</Alert>}
+
+      {companyOptions && (
+        <section className="space-y-4 rounded-xl border border-gold/40 bg-gold-50 p-4">
+          <h2 className="font-semibold text-ink">Post for</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Existing employer" name="companyId" hint="Applications are sent to this employer's dashboard.">
+              <select id="companyId" className={inputClass} value={companyId} onChange={(e) => setCompanyId(e.target.value)} disabled={!!newCompanyName.trim()}>
+                <option value="">— Choose an employer —</option>
+                {companyOptions.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="…or a new employer name" name="newCompanyName" hint="Creates a verified employer profile managed by you (applications come to your account).">
+              <input id="newCompanyName" className={inputClass} value={newCompanyName} onChange={(e) => setNewCompanyName(e.target.value)} maxLength={120} placeholder="e.g. Hawassa City Hotel" />
+            </Field>
+          </div>
+        </section>
+      )}
 
       <section className="space-y-4">
         <h2 className="font-semibold text-ink">Basics</h2>
@@ -170,7 +202,7 @@ export function JobForm({
         <h2 className="font-semibold text-ink">How to apply</h2>
         <Field label="Application method" name="applicationMethod">
           <select id="applicationMethod" className={inputClass} {...register("applicationMethod")}>
-            <option value="IN_APP">Through Loso (recommended — track applicants here)</option>
+            <option value="IN_APP">Through Looso (recommended — track applicants here)</option>
             <option value="EMAIL">By email</option>
             <option value="EXTERNAL_URL">On our website</option>
           </select>

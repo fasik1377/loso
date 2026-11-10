@@ -57,7 +57,7 @@ async function WorkerProfilePageContent({ params }: PageProps<"/workers/[id]">) 
                 {wp.headline && <p className="mt-1 text-muted">{wp.headline}</p>}
                 <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
                   <Rating average={avg} count={wp.ratingCount} />
-                  <span className="text-muted">{wp.completedCount} services completed on Loso</span>
+                  <span className="text-muted">{wp.completedCount} services completed on Looso</span>
                   <span className={wp.availability === "AVAILABLE" ? "font-medium text-success" : "text-muted"}>{humanize(wp.availability)}</span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
@@ -203,7 +203,7 @@ async function WorkerProfilePageContent({ params }: PageProps<"/workers/[id]">) 
           <Card>
             <CardBody>
               <h2 className="font-semibold text-ink">Request a service</h2>
-              <p className="mt-1 text-xs text-muted">The worker will accept or decline. Nothing is charged through Loso.</p>
+              <p className="mt-1 text-xs text-muted">The worker will accept or decline. Nothing is charged through Looso.</p>
               <div className="mt-4">
                 <ServiceRequestForm
                   workerId={worker.id}

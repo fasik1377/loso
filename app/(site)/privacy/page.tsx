@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy policy" };
 
 export default function PrivacyPage() {
   return (
-    <ProsePage title="Privacy policy" intro="How Loso collects, uses and protects personal information. This is a working draft and should be reviewed by legal counsel before launch.">
+    <ProsePage title="Privacy policy" intro="How Looso collects, uses and protects personal information. This is a working draft and should be reviewed by legal counsel before launch.">
       <h2>Information we collect</h2>
       <ul>
         <li>Account details: name, phone number, optional email, and a securely hashed password.</li>
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
       </ul>
       <h2>Who can see what</h2>
       <ul>
-        <li>Identity documents and payment proofs are private: only you and authorized Loso staff can view them.</li>
+        <li>Identity documents and payment proofs are private: only you and authorized Looso staff can view them.</li>
         <li>Your CV is shared only with employers whose job you apply to.</li>
         <li>Your phone number is shown only according to your visibility setting.</li>
         <li>Messages are visible only to conversation participants. Moderators may review a specific message only after it is reported.</li>

@@ -108,7 +108,7 @@ export async function reviewRegistrationPayment(actor: SessionUser, paymentId: s
         reviewedById: actor.id,
         reviewedAt: now,
         reviewNote: note ?? null,
-        receiptNumber: decision === "verify" ? `LOSO-R-${now.getFullYear()}-${payment.id.toUpperCase()}` : undefined,
+        receiptNumber: decision === "verify" ? `LOOSO-R-${now.getFullYear()}-${payment.id.toUpperCase()}` : undefined,
       },
     });
     await audit(
@@ -213,7 +213,7 @@ export async function activateUser(actor: SessionUser, userId: string, note?: st
     });
     if (updated.count !== 1) throw conflict("Only pending accounts can be activated.");
     await audit({ actorId: actor.id, action: "user.activate", entityType: "User", entityId: userId, metadata: { note: note ?? null } }, tx);
-    await notify({ userId, type: "ACCOUNT", title: "Your Loso account is active", body: "Welcome! You can now use all features.", link: "/dashboard" }, tx);
+    await notify({ userId, type: "ACCOUNT", title: "Your Looso account is active", body: "Welcome! You can now use all features.", link: "/dashboard" }, tx);
   });
 }
 

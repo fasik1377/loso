@@ -1,10 +1,12 @@
 import "server-only";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { CloudinaryDriver } from "./cloudinary";
 
 /**
  * Storage abstraction. File bytes go to a driver; metadata goes to StoredFile.
  *  - "local": private directory on disk (development / single-server only; NOT for serverless).
+ *  - "cloudinary": Cloudinary (private raw assets; see ./cloudinary.ts). Recommended for Vercel.
  *  - "s3":    any S3-compatible object store (AWS S3, Cloudflare R2, MinIO, Wasabi...).
  * Files are never served directly from the bucket or /public; /api/files/[id] authorizes every read.
  */
@@ -71,7 +73,15 @@ let driver: StorageDriver | null = null;
 export function storage(): StorageDriver {
   if (driver) return driver;
   const kind = process.env.STORAGE_DRIVER ?? "local";
-  if (kind === "s3") {
+  if (kind === "cloudinary") {
+    const cloud = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    if (!cloud || !apiKey || !apiSecret) {
+      throw new Error("STORAGE_DRIVER=cloudinary but CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET are not set");
+    }
+    driver = new CloudinaryDriver(cloud, apiKey, apiSecret, process.env.CLOUDINARY_FOLDER || "looso");
+  } else if (kind === "s3") {
     const bucket = process.env.S3_BUCKET;
     if (!bucket || !process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) {
       throw new Error("STORAGE_DRIVER=s3 but S3_BUCKET / S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY are not set");
@@ -79,7 +89,7 @@ export function storage(): StorageDriver {
     driver = new S3Driver(bucket);
   } else {
     if (process.env.NODE_ENV === "production" && process.env.ALLOW_LOCAL_STORAGE_IN_PRODUCTION !== "true") {
-      throw new Error("Local file storage is disabled in production. Configure STORAGE_DRIVER=s3.");
+      throw new Error("Local file storage is disabled in production. Configure STORAGE_DRIVER=cloudinary (or s3).");
     }
     driver = new LocalDriver(process.env.STORAGE_LOCAL_DIR ?? path.join(process.cwd(), "storage"));
   }

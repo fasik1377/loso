@@ -1,8 +1,8 @@
-# Loso — Hawassa Jobs & Services Marketplace
+# Looso — Hawassa Jobs & Services Marketplace
 
 **Your Skills. Your Opportunities.** Connecting people, skills, and opportunities across Hawassa.
 
-Loso connects skilled workers and job seekers with customers and employers. Customers find trusted
+Looso connects skilled workers and job seekers with customers and employers. Customers find trusted
 local professionals and send service requests. Employers publish vacancies and manage applicants.
 Workers register, pay a registration fee, get verified and then receive work.
 
@@ -11,11 +11,11 @@ Workers register, pay a registration fee, get verified and then receive work.
 | Area | Choice |
 | --- | --- |
 | Framework | Next.js 16 (App Router, Server Actions, `cacheComponents`), React 19, TypeScript strict |
-| Styling | Tailwind CSS 4 with Loso brand tokens (`app/globals.css`), Lucide icons |
+| Styling | Tailwind CSS 4 with Looso brand tokens (`app/globals.css`), Lucide icons |
 | Database | MongoDB + Prisma 6 (MongoDB connector; needs a replica set such as MongoDB Atlas) |
 | Auth | Custom: scrypt password hashing, DB-backed sessions (hashed tokens, httpOnly SameSite cookies) |
 | Validation | Zod 4 (shared client/server), React Hook Form for complex forms |
-| Files | Storage driver abstraction: private local disk (dev) or any S3-compatible bucket (prod) |
+| Files | Storage driver abstraction: private local disk (dev), Cloudinary (private assets) or any S3-compatible bucket (prod) |
 | Tests | Vitest — unit tests for business rules + database integration tests for workflows |
 
 ## Project layout
@@ -167,8 +167,11 @@ tracked. Advertising payments are separate from registration fees and are handle
 
 ## Deployment
 
-1. Provision MongoDB (Atlas or another replica set) and an S3-compatible bucket. Set `DATABASE_URL`, `APP_URL`,
-   `STORAGE_DRIVER=s3` and the `S3_*` variables. Local disk storage is refused in production.
+1. Provision MongoDB (Atlas or another replica set) and file storage. Set `DATABASE_URL` and `APP_URL`, then either
+   `STORAGE_DRIVER=cloudinary` with `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+   (recommended on Vercel; files are stored as private Cloudinary assets) or `STORAGE_DRIVER=s3` with the `S3_*`
+   variables. Local disk storage is refused in production. In MongoDB Atlas, allow network access from `0.0.0.0/0`
+   for serverless hosts such as Vercel. After changing environment variables on Vercel, redeploy.
 2. `npm ci && npm run db:push && npm run build && npm start` (or deploy to any Node host).
    `prisma generate` runs automatically on `postinstall`.
 3. `npm run db:seed` once for reference data. Do **not** set `SEED_DEMO_DATA` in production.
@@ -186,5 +189,4 @@ tracked. Advertising payments are separate from registration fees and are handle
 | Realtime chat | Polling only | `app/dashboard/messages/[id]/chat-window.tsx` |
 | Maps | Not used; location search uses the admin-managed location list | — |
 | Amharic / Sidamu Afo | Market settings are centralized in `lib/config.ts`; UI strings are still English | — |
-#   l o s o  
- 
+# looso

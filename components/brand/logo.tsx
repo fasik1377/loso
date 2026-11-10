@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 /**
- * Loso mark: a briefcase whose body carries a checkmark, i.e. "verified opportunity".
+ * Looso mark: a briefcase whose body carries a checkmark, i.e. "verified opportunity".
  * Pure SVG so it scales from favicon to footer without image assets.
  */
 export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
@@ -17,10 +17,10 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
 
 export function Logo({ href = "/", tone = "dark", className = "" }: { href?: string; tone?: "dark" | "light"; className?: string }) {
   return (
-    <Link href={href} className={`inline-flex items-center gap-2 ${className}`} aria-label="Loso home">
+    <Link href={href} className={`inline-flex items-center gap-2 ${className}`} aria-label="Looso home">
       <LogoMark />
       <span className={`text-xl font-bold tracking-tight ${tone === "dark" ? "text-brand" : "text-white"}`}>
-        Loso
+        Looso
       </span>
     </Link>
   );

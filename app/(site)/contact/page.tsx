@@ -14,7 +14,7 @@ async function ContactPageContent() {
   return (
     <div className="mx-auto grid max-w-5xl gap-6 px-4 py-10 sm:px-6 md:grid-cols-[1fr_300px]">
       <div>
-        <h1 className="text-3xl font-bold text-ink">Contact Loso</h1>
+        <h1 className="text-3xl font-bold text-ink">Contact Looso</h1>
         <p className="mt-2 text-muted">Questions, support requests, disputes or problems to report — send us a message.</p>
         <Card className="mt-6">
           <CardBody>

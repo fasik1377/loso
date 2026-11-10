@@ -96,7 +96,7 @@ export async function createStaffAdvertisement(actor: SessionUser, d: StaffAdDat
     }
     await audit({ actorId: actor.id, action: "ad.staff_create", entityType: "Advertisement", entityId: ad.id, metadata: { jobId: job?.id ?? null, chargeMinor: d.charge } }, tx);
     if (job) {
-      await notify({ userId: job.company.ownerId, type: "ADVERTISEMENT", title: `Your job "${job.title}" is now sponsored on Loso`, link: `/jobs/${job.id}` }, tx);
+      await notify({ userId: job.company.ownerId, type: "ADVERTISEMENT", title: `Your job "${job.title}" is now sponsored on Looso`, link: `/jobs/${job.id}` }, tx);
     }
     return ad;
   });

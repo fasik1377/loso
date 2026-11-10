@@ -3,7 +3,7 @@
  * city, currency or phone formats so another Ethiopian city (or locale) can be added later.
  */
 export const marketConfig = {
-  appName: "Loso",
+  appName: "Looso",
   tagline: "Your Skills. Your Opportunities.",
   supportingMessage: "Connecting people, skills, and opportunities across Hawassa.",
   defaultCity: process.env.LOSO_DEFAULT_CITY ?? "Hawassa",

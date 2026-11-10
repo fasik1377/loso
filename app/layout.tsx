@@ -8,9 +8,9 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "sw
 const ethiopic = Noto_Sans_Ethiopic({ variable: "--font-ethiopic", subsets: ["ethiopic"], display: "swap", preload: false });
 
 export const metadata: Metadata = {
-  title: { default: "Loso — Your Skills. Your Opportunities.", template: "%s · Loso" },
+  title: { default: "Looso — Your Skills. Your Opportunities.", template: "%s · Looso" },
   description: "Find skilled workers, discover jobs and grow your future. Connecting people, skills, and opportunities across Hawassa.",
-  applicationName: "Loso",
+  applicationName: "Looso",
 };
 
 export const viewport: Viewport = {

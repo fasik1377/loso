@@ -15,7 +15,7 @@ const TYPES = [
   ["REVIEW", "Reviews"],
   ["JOB", "Job posts & moderation"],
   ["ADVERTISEMENT", "Advertisements"],
-  ["ANNOUNCEMENT", "Loso announcements"],
+  ["ANNOUNCEMENT", "Looso announcements"],
 ] as const;
 
 export default async function SettingsPage() {

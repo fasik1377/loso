@@ -20,7 +20,7 @@ async function RegisterPageContent({ searchParams }: PageProps<"/register">) {
   const initial = type === "employer" ? "EMPLOYER" : type === "customer" ? "CUSTOMER" : "WORKER";
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-bold text-ink">Join Loso</h1>
+      <h1 className="text-2xl font-bold text-ink">Join Looso</h1>
       <p className="mt-1 text-sm text-muted">
         Already have an account? <Link href="/login" className="font-semibold text-brand hover:underline">Sign in</Link>
       </p>

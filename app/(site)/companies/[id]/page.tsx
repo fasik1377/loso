@@ -70,7 +70,7 @@ async function CompanyPageContent({ params }: PageProps<"/companies/[id]">) {
       )}
       <h2 className="mb-4 mt-10 text-xl font-bold text-ink">Reviews from employees ({company.ratingCount})</h2>
       {reviews.length === 0 ? (
-        <EmptyState title="No employee reviews yet" description="Only people hired through Loso can review this employer." />
+        <EmptyState title="No employee reviews yet" description="Only people hired through Looso can review this employer." />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {reviews.map((r) => (

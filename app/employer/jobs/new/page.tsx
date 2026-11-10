@@ -15,7 +15,7 @@ export default async function NewJobPage() {
   const canPublish = company.status === "APPROVED" || (!settings.requireCompanyApprovalToPublish && company.status === "PENDING_REVIEW");
   return (
     <div className="max-w-4xl">
-      <PageHeader title="Post a job" description={settings.requireJobReview ? "Published jobs are reviewed by Loso before they appear publicly." : "Published jobs appear in search immediately."} />
+      <PageHeader title="Post a job" description={settings.requireJobReview ? "Published jobs are reviewed by Looso before they appear publicly." : "Published jobs appear in search immediately."} />
       <Card>
         <CardBody>
           <JobForm

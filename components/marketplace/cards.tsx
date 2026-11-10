@@ -112,7 +112,7 @@ export function WorkerCard({ worker }: { worker: WorkerCardData }) {
         </span>
       </div>
       <div className="mt-2 flex items-center justify-between text-xs text-muted">
-        <span>{worker.completedCount} completed on Loso</span>
+        <span>{worker.completedCount} completed on Looso</span>
         <span className={worker.availability === "AVAILABLE" ? "font-medium text-success" : ""}>{humanize(worker.availability)}</span>
       </div>
     </Card>

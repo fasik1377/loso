@@ -60,7 +60,7 @@ export async function forgotPasswordAction(_: ActionResult | null, form: FormDat
     return {
       ok: true,
       message:
-        "If an account matches, a reset link has been created. Automatic SMS/email delivery is not configured yet, so please contact Loso support to receive your link through a verified channel.",
+        "If an account matches, a reset link has been created. Automatic SMS/email delivery is not configured yet, so please contact Looso support to receive your link through a verified channel.",
     };
   });
 }

@@ -27,7 +27,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import { ButtonLink, Card, EmptyState } from "@/components/ui/primitives";
 import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import { HeroSearch } from "@/components/marketplace/hero-search";
-import { HeroVisual } from "@/components/marketplace/hero-visual";
+import { HeroPhotoGrid } from "@/components/marketplace/hero-photo-grid";
 import { RotatingText } from "@/components/marketplace/rotating-text";
 import { CategoryIcon } from "@/components/marketplace/category-icon";
 import { JobCard, WorkerCard } from "@/components/marketplace/cards";
@@ -98,27 +98,19 @@ async function HomePageContent() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-brand-deep">
-        {/* Ambient motion: drifting glows + subtle dot grid */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div className="absolute -right-32 -top-32 h-[28rem] w-[28rem] animate-drift rounded-full bg-gold/20 blur-3xl" />
-          <div className="absolute -bottom-40 -left-24 h-[26rem] w-[26rem] animate-drift rounded-full bg-sky-400/10 blur-3xl [animation-delay:-9s]" />
-          <div className="absolute inset-0 opacity-[0.07] [background-image:radial-gradient(white_1px,transparent_1px)] [background-size:22px_22px]" />
-        </div>
-
-        <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 md:pt-16 lg:pb-28">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
+        <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 md:pt-14 lg:pb-24">
+          <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
             <div>
               <p className="inline-flex animate-fade-up items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gold ring-1 ring-white/15">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> {t.hero.badge}
               </p>
-              <h1 className="mt-5 animate-fade-up text-4xl font-extrabold leading-[1.1] tracking-tight text-white [animation-delay:80ms] sm:text-5xl xl:text-6xl">
+              <h1 className="mt-5 animate-fade-up text-4xl font-extrabold leading-[1.08] tracking-tight text-white [animation-delay:80ms] sm:text-5xl xl:text-6xl">
                 {t.hero.titleLine1}
                 <br />
                 {t.hero.titleLine2}
                 <br />
-                <span className="animate-shimmer bg-[linear-gradient(90deg,#F4B942,#FFE3A3,#F4B942)] bg-[length:200%_auto] bg-clip-text text-transparent">{t.hero.titleLine3}</span>
+                <span className="text-gold">{t.hero.titleLine3}</span>
               </h1>
-              <div aria-hidden="true" className="tilet mt-5 w-44 animate-fade-up opacity-90 [animation-delay:120ms]" />
               <p className="mt-5 flex animate-fade-up flex-wrap items-baseline gap-x-2 text-xl font-semibold text-white/90 [animation-delay:160ms]">
                 {t.hero.lookingFor && <span>{t.hero.lookingFor}</span>}
                 <RotatingText items={t.hero.rotating} className="min-w-[12ch] text-gold" />
@@ -128,11 +120,11 @@ async function HomePageContent() {
                 <ButtonLink href="/jobs" variant="gold" size="lg">
                   <Briefcase className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaFindWork}
                 </ButtonLink>
-                <ButtonLink href="/services" size="lg" className="bg-white/10 ring-1 ring-white/25 hover:bg-white/20">
+                <ButtonLink href="/services" size="lg" className="bg-white/10 text-white ring-1 ring-white/25 hover:bg-white/20">
                   <Search className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaHire}
                 </ButtonLink>
               </div>
-              <ul className="mt-7 grid gap-2 text-sm text-white/80 sm:grid-cols-1">
+              <ul className="mt-7 grid gap-2 text-sm text-white/80">
                 {t.hero.trust.map((line, i) => (
                   <li key={line} className="inline-flex animate-fade-up items-center gap-2" style={{ animationDelay: `${300 + i * 80}ms` }}>
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-gold" aria-hidden="true" /> {line}
@@ -140,12 +132,12 @@ async function HomePageContent() {
                 ))}
               </ul>
             </div>
-            <div className="mx-auto w-full max-w-[420px] animate-fade-up [animation-delay:200ms] lg:max-w-none">
-              <HeroVisual />
+            <div className="animate-fade-up [animation-delay:200ms]">
+              <HeroPhotoGrid t={t.hero} />
             </div>
           </div>
 
-          <div className="mt-10 animate-fade-up [animation-delay:320ms] lg:mt-6">
+          <div className="mt-10 animate-fade-up [animation-delay:320ms]">
             <HeroSearch
               t={t.search}
               locations={locations.map((l) => ({ value: l.slug, label: l.name }))}
@@ -154,15 +146,10 @@ async function HomePageContent() {
             />
           </div>
         </div>
-
-        {/* Soft wave into the page background */}
-        <svg aria-hidden="true" className="absolute inset-x-0 bottom-0 h-10 w-full text-canvas" viewBox="0 0 1440 40" preserveAspectRatio="none">
-          <path fill="currentColor" d="M0 40V22C240 2 480 0 720 12s480 24 720 6v22z" />
-        </svg>
       </section>
 
       {/* Live stats */}
-      <section aria-label={t.stats.label} className="relative z-10 mx-auto -mt-6 max-w-6xl px-4 sm:px-6">
+      <section aria-label={t.stats.label} className="relative z-10 mx-auto -mt-8 max-w-6xl px-4 sm:px-6">
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-xl shadow-brand/5 md:grid-cols-4">
           <StatTile icon={<Users className="h-5 w-5" />} value={workerCount} label={t.stats.verifiedWorkers} />
           <StatTile icon={<Briefcase className="h-5 w-5" />} value={jobCount} label={t.stats.openJobs} />
@@ -280,7 +267,6 @@ async function HomePageContent() {
             return (
               <Reveal key={b.title} delay={i * 100}>
                 <div className="group relative h-full overflow-hidden rounded-2xl border border-line bg-card p-6 transition-all hover:-translate-y-1 hover:border-gold/50 hover:shadow-lg">
-                  <div aria-hidden="true" className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gold/10 transition-transform duration-500 group-hover:scale-150" />
                   <span className="relative inline-flex rounded-xl bg-gold-50 p-3 ring-1 ring-gold/20">
                     <Icon className="h-6 w-6 text-gold-600" aria-hidden="true" />
                   </span>
@@ -314,9 +300,6 @@ async function HomePageContent() {
       {/* CTAs */}
       <section className="mx-auto grid max-w-7xl gap-4 px-4 pb-20 sm:px-6 md:grid-cols-2">
         <div className="relative overflow-hidden rounded-3xl bg-brand-deep p-8 text-white">
-          <div aria-hidden="true" className="absolute -right-10 -top-10 h-40 w-40 animate-drift rounded-full bg-gold/25 blur-2xl" />
-          <div aria-hidden="true" className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(white_1px,transparent_1px)] [background-size:18px_18px]" />
-          <div aria-hidden="true" className="tilet absolute inset-x-0 bottom-0 opacity-40" />
           <h2 className="relative text-2xl font-bold">{h.ctaWorkerTitle}</h2>
           <p className="relative mt-2 text-white/80">{h.ctaWorkerText}</p>
           <ButtonLink href="/register" variant="gold" className="relative mt-6">
@@ -324,7 +307,6 @@ async function HomePageContent() {
           </ButtonLink>
         </div>
         <div className="relative overflow-hidden rounded-3xl border border-gold bg-gold-50 p-8">
-          <div aria-hidden="true" className="tilet absolute inset-x-0 bottom-0 opacity-50" />
           <h2 className="text-2xl font-bold text-brand">{h.ctaEmployerTitle}</h2>
           <p className="mt-2 text-ink/80">{h.ctaEmployerText}</p>
           <ButtonLink href="/register?type=employer" className="mt-6">
@@ -356,10 +338,7 @@ function SectionHeading({ eyebrow, title, subtitle, href, linkLabel }: { eyebrow
   return (
     <div className="mb-8 flex items-end justify-between gap-4">
       <div>
-        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gold-600">
-          <span aria-hidden="true" className="tilet h-[10px] w-8" />
-          {eyebrow}
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gold-600">{eyebrow}</p>
         <h2 className="mt-1 text-2xl font-bold text-ink sm:text-3xl">{title}</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p>
       </div>

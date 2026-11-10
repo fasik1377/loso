@@ -122,7 +122,7 @@ export function RegisterForm({ initialType }: { initialType: AccountType }) {
 
       {type === "EMPLOYER" && (
         <p className="rounded-lg bg-gold-50 px-4 py-3 text-xs text-ink">
-          After registering, upload your business license. Your employer account becomes usable once a Loso administrator verifies it.
+          After registering, upload your business license. Your employer account becomes usable once a Looso administrator verifies it.
         </p>
       )}
 

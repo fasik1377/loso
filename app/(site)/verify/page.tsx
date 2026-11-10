@@ -15,7 +15,7 @@ async function VerifyPageContent() {
   const user = await requireUserPage();
   if (user.status === "PENDING") redirect("/account-status");
   return (
-    <ProsePage title="How verification works" intro="An administrator verifies every job seeker and employer before they can use Loso.">
+    <ProsePage title="How verification works" intro="An administrator verifies every job seeker and employer before they can use Looso.">
       <h2>Workers</h2>
       <p>Workers pay a registration fee and upload an identity document. Staff confirm the payment and review the document as two separate checks; only when both pass is the account activated.</p>
       <h2>Employers</h2>

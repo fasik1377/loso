@@ -41,7 +41,7 @@ async function AccountStatusPageContent() {
       {stage !== "ACTIVE" && !["REJECTED", "SUSPENDED"].includes(stage) && (
         <div className="mt-4">
           <Alert tone="warning" title="Admin verification required">
-            Every job seeker and employer account is reviewed by a Loso administrator. You can only use Loso after your account is approved — we&apos;ll notify you here.
+            Every job seeker and employer account is reviewed by a Looso administrator. You can only use Looso after your account is approved — we&apos;ll notify you here.
           </Alert>
         </div>
       )}
@@ -71,7 +71,7 @@ async function AccountStatusPageContent() {
                   {payment.status === "VERIFIED" && payment.receiptNumber && (
                     <p className="text-muted">Receipt no. <span className="font-mono">{payment.receiptNumber}</span> · confirmed {formatDateTime(payment.reviewedAt)}</p>
                   )}
-                  {payment.status === "WAIVED" && <p className="text-muted">The registration fee is currently waived by Loso.</p>}
+                  {payment.status === "WAIVED" && <p className="text-muted">The registration fee is currently waived by Looso.</p>}
                   {payment.status === "REJECTED" && payment.reviewNote && <Alert tone="danger" title="Why the payment was not confirmed">{payment.reviewNote}</Alert>}
                   {latestTxn && (
                     <p className="text-muted">
@@ -83,7 +83,7 @@ async function AccountStatusPageContent() {
                       <Alert title="How to pay">
                         <p className="whitespace-pre-line">{settings.manualPaymentInstructions}</p>
                         <p className="mt-2 text-xs">
-                          Payments are confirmed manually by Loso staff against the official account statement. Online payment (e.g. Chapa / Telebirr checkout) is not enabled yet.
+                          Payments are confirmed manually by Looso staff against the official account statement. Online payment (e.g. Chapa / Telebirr checkout) is not enabled yet.
                         </p>
                       </Alert>
                       <PaymentForm />
