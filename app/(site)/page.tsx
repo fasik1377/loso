@@ -27,8 +27,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import { ButtonLink, Card, EmptyState } from "@/components/ui/primitives";
 import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import { HeroSearch } from "@/components/marketplace/hero-search";
-import { HeroPhotoGrid } from "@/components/marketplace/hero-photo-grid";
-import { RotatingText } from "@/components/marketplace/rotating-text";
+import { HeroMosaic } from "@/components/marketplace/hero-mosaic";
 import { CategoryIcon } from "@/components/marketplace/category-icon";
 import { JobCard, WorkerCard } from "@/components/marketplace/cards";
 import { AdSlot } from "@/components/marketplace/ad-slot";
@@ -37,6 +36,9 @@ import { SpotlightPopup, type SpotlightItem } from "@/components/marketplace/spo
 import { CategoryMarquee } from "@/components/marketplace/category-marquee";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
+
+/** Hero shortcuts, in the same order as the translated `hero.popular` labels. */
+const POPULAR_LINKS = ["/services/electrical", "/services/plumbing", "/jobs?q=driver", "/jobs?category=administration-and-office", "/services/cleaning"];
 
 async function HomePageContent() {
   await connection(); // live data: render per request
@@ -111,11 +113,7 @@ async function HomePageContent() {
                 <br />
                 <span className="text-gold">{t.hero.titleLine3}</span>
               </h1>
-              <p className="mt-5 flex animate-fade-up flex-wrap items-baseline gap-x-2 text-xl font-semibold text-white/90 [animation-delay:160ms]">
-                {t.hero.lookingFor && <span>{t.hero.lookingFor}</span>}
-                <RotatingText items={t.hero.rotating} className="min-w-[12ch] text-gold" />
-              </p>
-              <p className="mt-3 max-w-xl animate-fade-up text-lg text-white/75 [animation-delay:200ms]">{t.hero.subtitle}</p>
+              <p className="mt-5 max-w-lg animate-fade-up text-lg text-white/75 [animation-delay:160ms]">{t.hero.subtitle}</p>
               <div className="mt-7 flex animate-fade-up flex-wrap gap-3 [animation-delay:240ms]">
                 <ButtonLink href="/jobs" variant="gold" size="lg">
                   <Briefcase className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaFindWork}
@@ -124,16 +122,21 @@ async function HomePageContent() {
                   <Search className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaHire}
                 </ButtonLink>
               </div>
-              <ul className="mt-7 grid gap-2 text-sm text-white/80">
-                {t.hero.trust.map((line, i) => (
-                  <li key={line} className="inline-flex animate-fade-up items-center gap-2" style={{ animationDelay: `${300 + i * 80}ms` }}>
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-gold" aria-hidden="true" /> {line}
-                  </li>
+              <div className="mt-8 flex animate-fade-up flex-wrap items-center gap-2 [animation-delay:320ms]">
+                <span className="mr-1 text-sm text-white/60">{t.hero.popularLabel}</span>
+                {t.hero.popular.map((label, i) => (
+                  <Link
+                    key={label}
+                    href={POPULAR_LINKS[i] ?? "/jobs"}
+                    className="rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-sm text-white/85 transition-colors hover:border-gold/60 hover:bg-white/10 hover:text-white"
+                  >
+                    {label}
+                  </Link>
                 ))}
-              </ul>
+              </div>
             </div>
             <div className="animate-fade-up [animation-delay:200ms]">
-              <HeroPhotoGrid t={t.hero} />
+              <HeroMosaic label={t.hero.photoGridLabel} />
             </div>
           </div>
 

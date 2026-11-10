@@ -44,8 +44,6 @@ export const am: Dictionary = {
     titleLine1: "የተካኑ ባለሙያዎችን ያግኙ።",
     titleLine2: "ስራ ያግኙ።",
     titleLine3: "የወደፊትዎን ያሳድጉ።",
-    lookingFor: "",
-    rotating: ["ኤሌክትሪሻን ይፈልጋሉ?", "የቧንቧ ባለሙያ ይፈልጋሉ?", "የጽዳት ሰራተኛ ይፈልጋሉ?", "መካኒክ ይፈልጋሉ?", "አዲስ ስራ ይፈልጋሉ?", "አናጺ ይፈልጋሉ?"],
     subtitle: "በሀዋሳ ሰዎችን፣ ክህሎቶችንና እድሎችን እናገናኛለን።",
     photoGridLabel: "በሀዋሳ በስራ ላይ ያሉ ሰዎች፦ የእጅ ሙያተኞች፣ ሹፌሮች፣ የቢሮ ሰራተኞችና ሌሎችም",
     photos: {
@@ -61,9 +59,10 @@ export const am: Dictionary = {
       satellite: "የዲሽ ገጣሚ",
       photographer: "ፎቶግራፈር",
     },
+    popularLabel: "ተፈላጊ፦",
+    popular: ["ኤሌክትሪሻን","የቧንቧ ባለሙያ","ሹፌር","የቢሮ ስራዎች","ጽዳት"],
     ctaFindWork: "ስራ ያግኙ",
     ctaHire: "ባለሙያ ይቅጠሩ",
-    trust: ["እያንዳንዱ ባለሙያና ቀጣሪ በአስተዳዳሪ የተረጋገጠ ነው", "ግምገማዎች ከተጠናቀቀ ስራ ብቻ", "ስልክ ቁጥሮች በነባሪ ሚስጥራዊ ናቸው"],
   },
   search: {
     tabsLabel: "የፍለጋ አይነት",

@@ -42,6 +42,8 @@
   --animate-shimmer: shimmer 6s linear infinite;
   --animate-word-in: word-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-scroll-up: scroll-up 50s linear infinite;
+  --animate-tile-reveal: tile-reveal 1.1s cubic-bezier(0.65, 0, 0.35, 1) both;
+  --animate-ken-burns: ken-burns 9s ease-out both;
 }
 
 @keyframes fade-up {
@@ -118,6 +120,26 @@
 @keyframes scroll-up {
   to {
     transform: translateY(-50%);
+  }
+}
+
+/* Mosaic tile: new photo wipes in from the bottom edge. */
+@keyframes tile-reveal {
+  from {
+    clip-path: inset(100% 0 0 0 round 1rem);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 1rem);
+  }
+}
+
+/* Slow documentary-style zoom while a photo is on screen. */
+@keyframes ken-burns {
+  from {
+    transform: scale(1.14) translate3d(1.5%, 1%, 0);
+  }
+  to {
+    transform: scale(1) translate3d(0, 0, 0);
   }
 }
 

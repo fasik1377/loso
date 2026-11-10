@@ -39,8 +39,6 @@ export const en = {
     titleLine1: "Find Skilled Workers.",
     titleLine2: "Discover Jobs.",
     titleLine3: "Grow Your Future.",
-    lookingFor: "Looking for",
-    rotating: ["an electrician?", "a plumber?", "a cleaner?", "a mechanic?", "your next job?", "a carpenter?"],
     subtitle: "Connecting people, skills, and opportunities across Hawassa.",
     photoGridLabel: "People at work in Hawassa: tradespeople, drivers, office staff and more",
     photos: {
@@ -56,9 +54,10 @@ export const en = {
       satellite: "Satellite installer",
       photographer: "Photographer",
     },
+    popularLabel: "Popular:",
+    popular: ["Electrician","Plumber","Driver","Office jobs","Cleaning"],
     ctaFindWork: "Find work",
     ctaHire: "Hire a professional",
-    trust: ["Every worker & employer verified by an admin", "Reviews only from completed work", "Phone numbers private by default"],
   },
   search: {
     tabsLabel: "Search type",

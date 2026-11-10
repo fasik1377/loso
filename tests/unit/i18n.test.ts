@@ -17,7 +17,7 @@ describe("Amharic dictionary", () => {
   const amLeaves = leaves(am);
 
   it("has exactly the same keys (and list lengths) as English", () => {
-    const allowedEmpty = new Set(["hero.lookingFor"]); // Amharic puts the verb inside the rotating phrase
+    const allowedEmpty = new Set<string>();
     const missing = [...enLeaves.keys()].filter((k) => !amLeaves.has(k));
     const extra = [...amLeaves.keys()].filter((k) => !enLeaves.has(k));
     expect(missing).toEqual([]);
