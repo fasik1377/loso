@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Noto_Sans_Ethiopic } from "next/font/google";
+import { Bricolage_Grotesque, Inter, Noto_Sans_Ethiopic } from "next/font/google";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
+// Display face for the homepage hero headline.
+const display = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], display: "swap" });
 // Amharic (Ge'ez script) glyphs — used automatically wherever Ethiopic characters appear.
 const ethiopic = Noto_Sans_Ethiopic({ variable: "--font-ethiopic", subsets: ["ethiopic"], display: "swap", preload: false });
 
@@ -31,7 +33,7 @@ const themeScript = `(function(){try{var d=document.documentElement;d.classList.
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning className={`${inter.variable} ${ethiopic.variable} h-full antialiased`}>
+    <html lang="en" data-theme="light" suppressHydrationWarning className={`${inter.variable} ${display.variable} ${ethiopic.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

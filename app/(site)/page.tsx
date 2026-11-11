@@ -12,7 +12,6 @@ import {
   MessageSquare,
   Search,
   ShieldCheck,
-  Sparkles,
   Star,
   UserPlus,
   Users,
@@ -27,7 +26,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import { ButtonLink, Card, EmptyState } from "@/components/ui/primitives";
 import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import { HeroSearch } from "@/components/marketplace/hero-search";
-import { HeroMosaic } from "@/components/marketplace/hero-mosaic";
+import { HeroStageProvider, StageCaption, StagePhotos } from "@/components/marketplace/hero-stage";
 import { CategoryIcon } from "@/components/marketplace/category-icon";
 import { JobCard, WorkerCard } from "@/components/marketplace/cards";
 import { AdSlot } from "@/components/marketplace/ad-slot";
@@ -37,9 +36,6 @@ import { CategoryMarquee } from "@/components/marketplace/category-marquee";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
 import { AnimatedBackdrop } from "@/components/ui/animated-backdrop";
-
-/** Hero shortcuts, in the same order as the translated `hero.popular` labels. */
-const POPULAR_LINKS = ["/services/electrical", "/services/plumbing", "/jobs?q=driver", "/jobs?category=administration-and-office", "/services/cleaning"];
 
 async function HomePageContent() {
   await connection(); // live data: render per request
@@ -99,59 +95,64 @@ async function HomePageContent() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-brand-deep">
-        <AnimatedBackdrop pattern="orbits" orbitCenter="72%" />
-        <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 md:pt-14 lg:pb-24">
-          <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
-            <div>
-              <p className="inline-flex animate-fade-up items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gold ring-1 ring-white/15">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> {t.hero.badge}
-              </p>
-              <h1 className="mt-5 animate-fade-up text-4xl font-extrabold leading-[1.08] tracking-tight text-white [animation-delay:80ms] sm:text-5xl xl:text-6xl">
-                {t.hero.titleLine1}
-                <br />
-                {t.hero.titleLine2}
-                <br />
-                <span className="text-gold">{t.hero.titleLine3}</span>
-              </h1>
-              <p className="mt-5 max-w-lg animate-fade-up text-lg text-white/75 [animation-delay:160ms]">{t.hero.subtitle}</p>
-              <div className="mt-7 flex animate-fade-up flex-wrap gap-3 [animation-delay:240ms]">
-                <ButtonLink href="/jobs" variant="gold" size="lg">
-                  <Briefcase className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaFindWork}
-                </ButtonLink>
-                <ButtonLink href="/services" size="lg" className="bg-white/10 text-white ring-1 ring-white/25 hover:bg-white/20">
-                  <Search className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaHire}
-                </ButtonLink>
-              </div>
-              <div className="mt-8 flex animate-fade-up flex-wrap items-center gap-2 [animation-delay:320ms]">
-                <span className="mr-1 text-sm text-white/60">{t.hero.popularLabel}</span>
-                {t.hero.popular.map((label, i) => (
-                  <Link
-                    key={label}
-                    href={POPULAR_LINKS[i] ?? "/jobs"}
-                    className="rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-sm text-white/85 transition-colors hover:border-gold/60 hover:bg-white/10 hover:text-white"
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="animate-fade-up [animation-delay:200ms]">
-              <HeroMosaic label={t.hero.photoGridLabel} />
-            </div>
-          </div>
+      {/* Hero: full-bleed "stage" of real work, shutter transitions, one strong message */}
+      <HeroStageProvider>
+        <section className="relative isolate flex min-h-[44rem] flex-col overflow-hidden bg-brand-deep lg:min-h-[calc(100svh-4rem)]">
+          <StagePhotos label={t.hero.photoGridLabel} />
+          {/* Legibility: deep fade from the left (text side) and from the bottom (search). */}
+          <div aria-hidden="true" className="absolute inset-0 bg-brand-deep/55 lg:bg-gradient-to-r lg:from-brand-deep lg:via-brand-deep/70 lg:to-brand-deep/0" />
+          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-brand-deep via-brand-deep/60 to-transparent" />
+          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-brand-deep/70 to-transparent" />
 
-          <div className="mt-10 animate-fade-up [animation-delay:320ms]">
-            <HeroSearch
-              t={t.search}
-              locations={locations.map((l) => ({ value: l.slug, label: l.name }))}
-              serviceCategories={services.map((c) => ({ value: c.slug, label: c.name }))}
-              jobCategories={jobCats.map((c) => ({ value: c.slug, label: c.name }))}
-            />
+          <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-4 pb-20 pt-16 sm:px-6 lg:pb-24">
+            <div className="grid items-end gap-10 lg:grid-cols-[1fr_20rem]">
+              <div>
+                <p className="inline-flex animate-fade-up items-center gap-2.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/85 ring-1 ring-white/15 backdrop-blur-sm">
+                  <span className="relative flex h-2 w-2" aria-hidden="true">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
+                  </span>
+                  {t.hero.badge}
+                </p>
+                <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.95] tracking-tight text-white [text-shadow:0_4px_40px_rgb(0_0_0/0.35)] sm:text-7xl xl:text-8xl">
+                  {[t.hero.titleLine1, t.hero.titleLine2].map((line, i) => (
+                    <span key={i} className="block overflow-hidden pb-1">
+                      <span className="block" style={{ animation: `rise-in 0.9s cubic-bezier(0.2,0.8,0.2,1) ${150 + i * 140}ms both` }}>
+                        {line}
+                      </span>
+                    </span>
+                  ))}
+                  <span className="block overflow-hidden pb-1">
+                    <span className="block text-gold" style={{ animation: "rise-in 0.9s cubic-bezier(0.2,0.8,0.2,1) 430ms both" }}>
+                      {t.hero.titleLine3}
+                    </span>
+                  </span>
+                </h1>
+                <p className="mt-5 max-w-md animate-fade-up text-lg text-white/75 [animation-delay:600ms]">{t.hero.subtitle}</p>
+                <div className="mt-8 flex animate-fade-up flex-wrap gap-3 [animation-delay:720ms]">
+                  <ButtonLink href="/jobs" variant="gold" size="lg" className="group">
+                    <Briefcase className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaFindWork}
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  </ButtonLink>
+                  <ButtonLink href="/services" size="lg" className="bg-white/10 text-white ring-1 ring-white/25 backdrop-blur-sm hover:bg-white/20">
+                    <Search className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaHire}
+                  </ButtonLink>
+                </div>
+              </div>
+              <StageCaption labels={t.hero.photos} sceneLabel={t.hero.sceneLabel} className="animate-fade-up [animation-delay:900ms]" />
+            </div>
+
+            <div className="mt-12 animate-fade-up [animation-delay:850ms]">
+              <HeroSearch
+                t={t.search}
+                locations={locations.map((l) => ({ value: l.slug, label: l.name }))}
+                serviceCategories={services.map((c) => ({ value: c.slug, label: c.name }))}
+                jobCategories={jobCats.map((c) => ({ value: c.slug, label: c.name }))}
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </HeroStageProvider>
 
       {/* Live stats */}
       <section aria-label={t.stats.label} className="relative z-10 mx-auto -mt-8 max-w-6xl px-4 sm:px-6">

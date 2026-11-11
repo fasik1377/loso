@@ -1,19 +1,4 @@
 import type { CSSProperties } from "react";
-import {
-  Briefcase,
-  Camera,
-  Car,
-  Hammer,
-  HardHat,
-  Laptop,
-  Paintbrush,
-  Ruler,
-  Scissors,
-  Truck,
-  Wrench,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
 import { cx } from "@/components/ui/primitives";
 
 /** Deterministic "sparks" (no randomness, so server and client render the same markup). */
@@ -32,100 +17,6 @@ const SPARKS = [
   { left: 47, bottom: 30, delay: 9.5, dur: 13, size: 2, dx: 20 },
 ];
 
-/** Rings of the circular backdrop: diameter, turn time, direction, and the trade icons riding on them. */
-const ORBITS: {
-  size: string;
-  seconds: number;
-  reverse?: boolean;
-  icons: LucideIcon[];
-}[] = [
-  { size: "min(26rem, 80vw)", seconds: 70, icons: [Wrench, Briefcase, Zap] },
-  {
-    size: "min(42rem, 120vw)",
-    seconds: 100,
-    reverse: true,
-    icons: [Hammer, Laptop, Truck, Paintbrush],
-  },
-  {
-    size: "min(60rem, 170vw)",
-    seconds: 140,
-    icons: [HardHat, Camera, Scissors, Car, Ruler],
-  },
-];
-
-/** Concentric turning rings carrying job/trade icons (icons stay upright), with ripples from the centre. */
-function Orbits({ center }: { center: string }) {
-  return (
-    <div
-      className="absolute inset-0"
-      style={{
-        maskImage:
-          "radial-gradient(ellipse 75% 75% at 60% 50%, black 40%, transparent 85%)",
-        WebkitMaskImage:
-          "radial-gradient(ellipse 75% 75% at 60% 50%, black 40%, transparent 85%)",
-      }}
-    >
-      <div className="absolute" style={{ left: center, top: "50%" }}>
-        {/* Ripples spreading outwards */}
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="absolute left-0 top-0 rounded-full border border-gold/25"
-            style={{
-              width: "min(60rem, 170vw)",
-              height: "min(60rem, 170vw)",
-              animation: `orbit-ripple 9s ease-out ${i * 3}s infinite both`,
-            }}
-          />
-        ))}
-        {/* Glow at the centre */}
-        <span className="absolute left-0 top-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/15 blur-3xl" />
-        {ORBITS.map((o, ring) => {
-          const turn = `orbit-turn ${o.seconds}s linear infinite${o.reverse ? " reverse" : ""}`;
-          const counter = `orbit-turn ${o.seconds}s linear infinite${o.reverse ? "" : " reverse"}`;
-          return (
-            <div
-              key={ring}
-              className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2"
-              style={{ width: o.size, height: o.size }}
-            >
-              <div
-                className="relative h-full w-full rounded-full border border-dashed border-white/[0.09]"
-                style={{ animation: turn }}
-              >
-                {o.icons.map((Icon, i) => {
-                  const angle = (360 / o.icons.length) * i + ring * 25;
-                  return (
-                    <div
-                      key={i}
-                      className="absolute inset-0"
-                      style={{ transform: `rotate(${angle}deg)` }}
-                    >
-                      <span
-                        className="absolute left-1/2 top-0"
-                        style={{
-                          transform: `translate(-50%, -50%) rotate(${-angle}deg)`,
-                        }}
-                      >
-                        <span
-                          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.06] text-gold/70 ring-1 ring-white/15 backdrop-blur-sm"
-                          style={{ animation: counter }}
-                        >
-                          <Icon className="h-5 w-5" />
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 /**
  * Soft, slow, purely decorative motion layer: drifting aurora light, a gently panning grid,
  * rising sparks and (on dark surfaces) an occasional light beam. Pure CSS; hidden from
@@ -135,15 +26,10 @@ function Orbits({ center }: { center: string }) {
 export function AnimatedBackdrop({
   tone = "dark",
   sparks = true,
-  pattern = "grid",
-  orbitCenter = "50%",
   className,
 }: {
   tone?: "dark" | "light";
   sparks?: boolean;
-  /** "grid": panning square grid. "orbits": turning rings with job icons (centred at `orbitCenter`). */
-  pattern?: "grid" | "orbits";
-  orbitCenter?: string;
   className?: string;
 }) {
   const dark = tone === "dark";
@@ -178,10 +64,8 @@ export function AnimatedBackdrop({
         style={{ animation: "aurora-c 30s ease-in-out infinite" }}
       />
 
-      {pattern === "orbits" && <Orbits center={orbitCenter} />}
-
       {/* Panning grid, faded towards the edges */}
-      {pattern === "grid" && (
+      {
         <div
           className="absolute inset-0"
           style={{
@@ -194,7 +78,7 @@ export function AnimatedBackdrop({
             animation: "grid-pan 14s linear infinite",
           }}
         />
-      )}
+      }
 
       {/* Light beam sweeping across (dark surfaces only) */}
       {dark && (
