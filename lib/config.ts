@@ -4,7 +4,7 @@
  */
 export const marketConfig = {
   appName: "Looso",
-  tagline: "Your Skills. Your Opportunities.",
+  tagline: "Every Skill Has Value.",
   supportingMessage: "Connecting people, skills, and opportunities across Hawassa.",
   defaultCity: process.env.LOSO_DEFAULT_CITY ?? "Hawassa",
   region: "Sidama, Ethiopia",

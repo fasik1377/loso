@@ -5,7 +5,8 @@ import type { ActionResult } from "@/lib/errors";
 import { createSession, destroySession, getCurrentUser } from "@/lib/auth/session";
 import { homePathFor } from "@/lib/auth/guards";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { authenticate, changePassword, createPasswordReset, registerUser, resetPassword } from "@/lib/services/auth";
+import { authenticate, changePassword, createPasswordReset, isPhoneRegistered, registerUser, resetPassword } from "@/lib/services/auth";
+import { normalizePhone } from "@/lib/phone";
 import { forgotPasswordSchema, loginSchema, passwordSchema, registerSchema, resetPasswordSchema, type RegisterInput } from "@/lib/validation/schemas";
 import { invalid, safeAction } from "./safe";
 import { assertUser } from "@/lib/auth/guards";
@@ -21,6 +22,21 @@ export async function registerAction(input: RegisterInput): Promise<ActionResult
     // Job seekers and employers wait for admin verification on the status page.
     redirect("/account-status"); // every new account waits for admin approval
   });
+}
+
+/**
+ * Live check on the sign-up form: is this phone number free? Each phone number can belong to only
+ * one account. Rate-limited; registration itself enforces the same rule (and a unique DB index).
+ */
+export async function checkPhoneAction(raw: string): Promise<{ status: "invalid" | "taken" | "available" | "unknown" }> {
+  const phone = normalizePhone(String(raw ?? "").slice(0, 40));
+  if (!phone) return { status: "invalid" };
+  try {
+    await rateLimit(`phonecheck:${await clientIp()}`, 30, 10 * 60);
+  } catch {
+    return { status: "unknown" };
+  }
+  return { status: (await isPhoneRegistered(phone)) ? "taken" : "available" };
 }
 
 export async function loginAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {

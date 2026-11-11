@@ -4,13 +4,14 @@ import { SitePageSkeleton } from "@/components/layout/site-page-skeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BadgeCheck, Briefcase, Building2, Lock, MapPin, ShieldCheck, Sparkles, UserRound, Wrench } from "lucide-react";
+import { BadgeCheck, Briefcase, Building2, Lock, MapPin, ShieldCheck, UserRound, Wrench } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/session";
 import { homePathFor } from "@/lib/auth/guards";
 import { str } from "@/lib/search-params";
 import { Alert, Card, CardBody } from "@/components/ui/primitives";
 import { AnimatedBackdrop } from "@/components/ui/animated-backdrop";
 import { PhotoDeck } from "@/components/marketplace/photo-deck";
+import { Logo } from "@/components/brand/logo";
 import { LoginForm } from "./login-form";
 import { getDictionary } from "@/lib/i18n/server";
 
@@ -25,16 +26,14 @@ async function LoginPageContent({ searchParams }: PageProps<"/login">) {
   if (user) redirect(homePathFor(user));
   const a = t.auth;
   return (
-    <div className="grid min-h-[calc(100vh-4rem)] lg:grid-cols-[1.05fr_1fr]">
+    <div className="grid min-h-[calc(100vh-4.5rem)] lg:grid-cols-[1.05fr_1fr]">
       {/* Brand panel */}
       <section className="relative hidden overflow-hidden bg-brand-deep text-white lg:block">
         <AnimatedBackdrop />
         <div className="relative flex h-full flex-col justify-between gap-10 px-10 py-12 xl:px-16">
           <div className="animate-fade-up">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gold ring-1 ring-white/15">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Looso
-            </p>
-            <h2 className="mt-5 max-w-md text-4xl font-extrabold leading-tight tracking-tight">{a.panelTitle}</h2>
+            <Logo tone="light" size="xl" priority />
+            <h2 className="mt-8 max-w-md text-4xl font-extrabold leading-tight tracking-tight">{a.panelTitle}</h2>
             <p className="mt-3 max-w-md text-white/70">{a.panelText}</p>
           </div>
 
@@ -60,7 +59,7 @@ async function LoginPageContent({ searchParams }: PageProps<"/login">) {
             <ol className="mt-3 flex items-center gap-2 text-sm">
               {a.approvalSteps.map((s, i) => (
                 <li key={s} className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold text-xs font-bold text-brand-deep">{i + 1}</span>
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold text-xs font-bold text-on-gold">{i + 1}</span>
                   <span className="text-white/85">{s}</span>
                   {i < a.approvalSteps.length - 1 && <span className="mx-1 h-px w-8 bg-gradient-to-r from-gold/70 to-white/10" aria-hidden="true" />}
                 </li>
@@ -74,6 +73,7 @@ async function LoginPageContent({ searchParams }: PageProps<"/login">) {
       <section className="relative flex items-center justify-center overflow-hidden px-4 py-12 sm:px-6">
         <AnimatedBackdrop tone="light" sparks={false} />
         <div className="relative w-full max-w-md">
+          <Logo size="lg" className="mb-8 lg:hidden" />
           <div className="animate-fade-up">
             <p className="text-sm font-semibold text-gold-600">{a.welcomeBack}</p>
             <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">{a.signInTitle}</h1>
@@ -85,7 +85,7 @@ async function LoginPageContent({ searchParams }: PageProps<"/login">) {
               const Icon = ROLE_ICONS[i] ?? Briefcase;
               return (
                 <span key={r} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1 text-xs font-medium text-ink shadow-sm">
-                  <Icon className="h-3.5 w-3.5 text-brand" aria-hidden="true" /> {r}
+                  <Icon className="h-3.5 w-3.5 text-teal-700" aria-hidden="true" /> {r}
                 </span>
               );
             })}

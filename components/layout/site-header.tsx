@@ -70,8 +70,8 @@ async function HeaderContent() {
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-card/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Logo />
+      <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Logo priority />
         <Suspense fallback={<Skeleton className="h-10 w-48" />}>
           <HeaderContent />
         </Suspense>

@@ -52,7 +52,7 @@ export async function WorkerSearchView({ sp, basePath, fixedCategory }: { sp: SP
           <input name="maxPrice" type="number" min={0} step={50} defaultValue={int(sp, "maxPrice")} className={inputClass} />
         </Filter>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="available" value="1" defaultChecked={filters.available} className="h-4 w-4 accent-[#182B43]" />
+          <input type="checkbox" name="available" value="1" defaultChecked={filters.available} className="h-4 w-4 accent-brand" />
           Available now
         </label>
         <div className="flex gap-2">

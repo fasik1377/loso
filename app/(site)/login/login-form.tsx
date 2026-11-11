@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type KeyboardEvent } from "react";
-import { ArrowRight, AlertTriangle, Eye, EyeOff, KeyRound, UserRound } from "lucide-react";
+import { ArrowRight, AlertTriangle, Eye, EyeOff, KeyRound, Smartphone } from "lucide-react";
 import { loginAction } from "@/lib/actions/auth";
 import { ActionForm, Field, Input, SubmitButton } from "@/components/ui/form";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
@@ -17,8 +17,18 @@ export function LoginForm({ next, t }: { next?: string; t: Dictionary["auth"] })
       {next && <input type="hidden" name="next" value={next} />}
       <Field label={t.phoneOrEmail} name="phoneOrEmail" hint={t.identifierHint} required>
         <div className="relative">
-          <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden="true" />
-          <Input name="phoneOrEmail" autoComplete="username" autoCapitalize="none" spellCheck={false} required className="h-11 pl-9" />
+          <Smartphone className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+          <Input
+            name="phoneOrEmail"
+            type="tel"
+            inputMode="tel"
+            autoComplete="username"
+            placeholder={t.phonePlaceholder}
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            className="h-12 pl-10 text-base tracking-wide"
+          />
         </div>
       </Field>
       <Field label={t.password} name="password" required>

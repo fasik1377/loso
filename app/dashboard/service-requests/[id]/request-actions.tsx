@@ -60,7 +60,7 @@ export function ReviewForm({ serviceRequestId }: { serviceRequestId: string }) {
           {[1, 2, 3, 4, 5].map((n) => (
             <label key={n} className="cursor-pointer">
               <input type="radio" name="rating" value={n} className="peer sr-only" checked={rating === n} onChange={() => setRating(n)} aria-label={`${n} star${n > 1 ? "s" : ""}`} />
-              <Star className={`h-8 w-8 rounded peer-focus-visible:ring-2 peer-focus-visible:ring-gold-600 ${n <= rating ? "fill-gold text-gold" : "text-slate-300"}`} aria-hidden="true" />
+              <Star className={`h-8 w-8 rounded peer-focus-visible:ring-2 peer-focus-visible:ring-gold-600 ${n <= rating ? "fill-gold text-gold" : "text-muted/40"}`} aria-hidden="true" />
             </label>
           ))}
         </div>

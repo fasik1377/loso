@@ -10,7 +10,7 @@ type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
   primary: "bg-brand text-on-brand hover:bg-brand-700 disabled:bg-brand/50",
-  gold: "bg-gold text-brand hover:bg-gold-600 disabled:bg-gold/50",
+  gold: "bg-gold text-on-gold hover:bg-gold-400 disabled:bg-gold/50",
   outline: "border border-line bg-card text-ink hover:bg-canvas disabled:text-muted",
   ghost: "text-ink hover:bg-brand-50 disabled:text-muted",
   danger: "bg-danger text-white hover:bg-danger/90 disabled:bg-danger/50",
@@ -39,18 +39,19 @@ export function ButtonLink({ variant = "primary", size = "md", className, ...pro
 }
 
 export function Card({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cx("rounded-2xl border border-line bg-card shadow-[0_1px_2px_rgba(24,43,67,0.04)]", className)} {...props} />;
+  return <div className={cx("rounded-2xl border border-line bg-card shadow-[0_1px_2px_rgba(20,43,74,0.05)]", className)} {...props} />;
 }
 
 export function CardBody({ className, ...props }: ComponentProps<"div">) {
   return <div className={cx("p-4 sm:p-6", className)} {...props} />;
 }
 
-type Tone = "neutral" | "brand" | "gold" | "success" | "warning" | "danger";
+type Tone = "neutral" | "brand" | "gold" | "teal" | "success" | "warning" | "danger";
 const tones: Record<Tone, string> = {
   neutral: "bg-canvas text-muted ring-1 ring-line",
   brand: "bg-brand-50 text-brand",
-  gold: "bg-gold-50 text-amber-800 dark:text-amber-300",
+  gold: "bg-gold-50 text-gold-600",
+  teal: "bg-teal-50 text-teal-700",
   success: "bg-success/10 text-success",
   warning: "bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
   danger: "bg-danger/10 text-danger",
@@ -99,7 +100,7 @@ export function Alert({ tone = "neutral", title, children }: { tone?: "neutral" 
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx("animate-pulse rounded-lg bg-slate-200/70", className)} aria-hidden="true" />;
+  return <div className={cx("animate-pulse rounded-lg bg-line", className)} aria-hidden="true" />;
 }
 
 export function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {

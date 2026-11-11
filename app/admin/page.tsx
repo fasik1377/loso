@@ -197,7 +197,7 @@ export default async function AdminOverviewPage() {
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-4 w-4 text-emerald-300" aria-hidden="true" /> All queues are clear. Nice work!
+                  <CheckCircle2 className="h-4 w-4 text-teal" aria-hidden="true" /> All queues are clear. Nice work!
                 </>
               )}
             </p>
@@ -210,7 +210,7 @@ export default async function AdminOverviewPage() {
                   href={a.href}
                   className={cx(
                     "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all hover:-translate-y-0.5",
-                    i === 0 ? "bg-gold text-brand-deep hover:bg-gold/90" : "bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/20",
+                    i === 0 ? "bg-gold text-on-gold hover:bg-gold/90" : "bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/20",
                   )}
                 >
                   {a.icon} {a.label}

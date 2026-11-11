@@ -49,7 +49,7 @@ export function SubmitButton({ children, pendingText, ...props }: ComponentProps
 }
 
 export const inputClass =
-  "block w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-canvas aria-[invalid=true]:border-danger";
+  "block w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-canvas aria-[invalid=true]:border-danger";
 
 export function Field({
   label,
@@ -115,7 +115,7 @@ export function Select({ name, className, options, placeholder, ...props }: Comp
 export function Checkbox({ name, label, value, defaultChecked, description }: { name: string; label: ReactNode; value?: string; defaultChecked?: boolean; description?: string }) {
   return (
     <label className="flex cursor-pointer items-start gap-2 text-sm">
-      <input type="checkbox" name={name} value={value} defaultChecked={defaultChecked} className="mt-0.5 h-4 w-4 rounded border-line accent-[#182B43]" />
+      <input type="checkbox" name={name} value={value} defaultChecked={defaultChecked} className="mt-0.5 h-4 w-4 rounded border-line accent-brand" />
       <span>
         <span className="text-ink">{label}</span>
         {description && <span className="block text-xs text-muted">{description}</span>}

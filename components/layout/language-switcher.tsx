@@ -49,7 +49,7 @@ export function LanguageSwitcher({ locale, label, tone = "light" }: { locale: Lo
             l === locale
               ? tone === "light"
                 ? "bg-brand text-on-brand"
-                : "bg-gold text-brand"
+                : "bg-gold text-on-gold"
               : tone === "light"
                 ? "text-muted hover:text-ink"
                 : "text-white/80 hover:text-white",

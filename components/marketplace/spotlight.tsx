@@ -76,7 +76,7 @@ function Board({ title, icon, rows, empty, labels }: { title: string; icon: Reac
                 <span
                   className={cx(
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
-                    i === 0 ? "bg-gold text-brand" : i === 1 ? "bg-line text-ink" : i === 2 ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300" : "bg-canvas text-muted",
+                    i === 0 ? "bg-gold text-on-gold" : i === 1 ? "bg-line text-ink" : i === 2 ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300" : "bg-canvas text-muted",
                   )}
                   aria-label={`Rank ${i + 1}`}
                 >

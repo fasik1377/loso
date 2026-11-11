@@ -10,7 +10,7 @@ const display = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["l
 const ethiopic = Noto_Sans_Ethiopic({ variable: "--font-ethiopic", subsets: ["ethiopic"], display: "swap", preload: false });
 
 export const metadata: Metadata = {
-  title: { default: "Looso — Your Skills. Your Opportunities.", template: "%s · Looso" },
+  title: { default: "Looso — Every Skill Has Value.", template: "%s · Looso" },
   description: "Find skilled workers, discover jobs and grow your future. Connecting people, skills, and opportunities across Hawassa.",
   applicationName: "Looso",
 };
@@ -19,8 +19,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#182B43" },
-    { media: "(prefers-color-scheme: dark)", color: "#0F1F35" },
+    { media: "(prefers-color-scheme: light)", color: "#142B4A" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D1D33" },
   ],
 };
 
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex min-h-full flex-col">
+      <body id="top" className="flex min-h-full flex-col">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2">
           Skip to content
         </a>

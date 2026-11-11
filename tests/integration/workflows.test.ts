@@ -149,6 +149,26 @@ describe.skipIf(!enabled)("workflows (database)", async () => {
     await expect(accounts.setAccountStatus(admin, admin.id, "suspend", "x")).rejects.toThrow(/own account/);
   });
 
+  it("one phone number = one account, whatever format it is typed in", async () => {
+    const id = await register("CUSTOMER");
+    const { phone: e164 } = await db.user.findUniqueOrThrow({ where: { id } });
+    expect(await auth.isPhoneRegistered(e164)).toBe(true);
+    const local = `0${e164.slice(4)}`; // +2519XXXXXXXX → 09XXXXXXXX
+    const { registerSchema } = await import("@/lib/validation/schemas");
+    for (const typed of [local, e164, `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`]) {
+      const data = registerSchema.parse({
+        accountType: "CUSTOMER",
+        fullName: "Duplicate Person",
+        phone: typed,
+        password: "Password123",
+        confirmPassword: "Password123",
+        acceptTerms: true,
+      });
+      expect(data.phone).toBe(e164); // normalized to the same E.164 number
+      await expect(auth.registerUser(data)).rejects.toThrow(/already exists/);
+    }
+  });
+
   it("customers pay no fee but still need admin approval before using Looso", async () => {
     const admin = await staff();
     const id = await register("CUSTOMER");

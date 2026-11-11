@@ -1,6 +1,6 @@
 # Looso — Hawassa Jobs & Services Marketplace
 
-**Your Skills. Your Opportunities.** Connecting people, skills, and opportunities across Hawassa.
+**Every Skill Has Value.** Connecting people, skills, and opportunities across Hawassa.
 
 Looso connects skilled workers and job seekers with customers and employers. Customers find trusted
 local professionals and send service requests. Employers publish vacancies and manage applicants.

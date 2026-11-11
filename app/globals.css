@@ -3,23 +3,34 @@
 /* Dark mode is driven by <html data-theme="dark"> (set before paint by the theme script). */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Loso design tokens. Use these utilities (bg-brand, text-ink, ...) instead of raw hex values. */
+/* Looso design tokens. Use these utilities (bg-brand, text-ink, ...) instead of raw hex values. */
 @theme {
-  /* Brand — Loso navy. brand = interactive (buttons, links); brand-deep = large surfaces (hero, footer, sidebar). */
-  --color-brand: #182b43;
-  --color-brand-deep: #182b43;
+  /*
+   * Looso brand palette.
+   *   Deep Navy (primary) #142B4A · Opportunity Teal (secondary) #0E9F8A · Warm Amber (accent) #FFB547
+   *   Soft White (background) #F7F9FC · Charcoal (text) #263445
+   * brand = interactive (buttons, links); brand-deep = large surfaces (hero, footer, sidebar).
+   * *-700 / gold-600 are darker text shades of the same hues (WCAG AA on light surfaces).
+   */
+  --color-brand: #142b4a;
+  --color-brand-deep: #142b4a;
   --color-on-brand: #ffffff;
-  --color-brand-700: #0f1d2f;
-  --color-brand-50: #edf1f7;
-  --color-brand-100: #d9e1ec;
-  --color-gold: #f4b942;
-  --color-gold-600: #d99a1e;
-  --color-gold-50: #fef7e6;
+  --color-brand-700: #0c1d34;
+  --color-brand-50: #ebf0f6;
+  --color-brand-100: #d5dfeb;
+  --color-teal: #0e9f8a;
+  --color-teal-700: #0b7a6b;
+  --color-teal-50: #e7f6f3;
+  --color-gold: #ffb547;
+  --color-gold-400: #f5a52e;
+  --color-gold-600: #a15f00;
+  --color-gold-50: #fff5e5;
+  --color-on-gold: #142b4a; /* text on amber, same in both themes */
 
   /* Neutrals & states */
-  --color-canvas: #f7f9fc; /* page background */
+  --color-canvas: #f7f9fc; /* page background (Soft White) */
   --color-card: #ffffff; /* card background */
-  --color-ink: #182b43; /* primary text */
+  --color-ink: #263445; /* primary text (Charcoal) */
   --color-muted: #64748b; /* secondary text */
   --color-line: #e5eaf0; /* borders */
   --color-success: #16a36a;
@@ -190,6 +201,74 @@
 }
 
 
+/* ── Animated hero logo (each part of the Looso logo moves on its own) ── */
+/* Letters pop up one by one. */
+@keyframes logo-letter-in {
+  0% { opacity: 0; transform: translate3d(0, 45%, 0) scale(0.6); }
+  60% { opacity: 1; transform: translate3d(0, -6%, 0) scale(1.05); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+/* The hand flies in from the top right and lands above the "L". */
+@keyframes logo-hand-in {
+  0% { opacity: 0; transform: translate3d(75%, -95%, 0) scale(0.3); }
+  50% { opacity: 1; }
+  78% { transform: translate3d(-2%, 2.5%, 0) scale(1.05); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+/* …then keeps hovering, as if still in flight. */
+@keyframes logo-hover {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0.6%, -2.5%, 0); }
+}
+/* Speed streaks shoot out behind the hand, then keep flickering. */
+@keyframes logo-streak-in {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+@keyframes logo-streak-idle {
+  0%, 100% { opacity: 1; transform: translateX(0) scaleX(1); }
+  50% { opacity: 0.5; transform: translateX(-1.5%) scaleX(1.15); }
+}
+/* The tie drops from the hand, swings like a pendulum, then sways gently. */
+@keyframes logo-tie-drop {
+  0% { opacity: 0; transform: translate3d(0, -20%, 0) scaleY(0.3); }
+  60% { opacity: 1; transform: translate3d(0, 3%, 0) scaleY(1.06); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scaleY(1); }
+}
+@keyframes logo-tie-swing {
+  0% { rotate: 0deg; }
+  20% { rotate: 9deg; }
+  45% { rotate: -6deg; }
+  70% { rotate: 3deg; }
+  100% { rotate: 0deg; }
+}
+@keyframes logo-tie-sway {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: 2.5deg; }
+  75% { rotate: -2.5deg; }
+}
+/* After the entrance the letters keep bouncing in a wave, one after another, forever. */
+@keyframes logo-letter-wave {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  8% { transform: translate3d(0, -11%, 0) scale(1.07); }
+  16% { transform: translate3d(0, 1.5%, 0) scale(0.98); }
+  22% { transform: translate3d(0, 0, 0) scale(1); }
+}
+/* Motto: a band of warm light ripples through each word in turn. */
+@keyframes motto-shimmer {
+  0% { background-position: 100% 0; }
+  45%, 100% { background-position: 0% 0; }
+}
+@keyframes motto-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -6%, 0); }
+}
+/* A light sheen sweeps across the letters every few seconds. */
+@keyframes logo-sheen {
+  0% { background-position: 100% 0; }
+  35%, 100% { background-position: 0% 0; }
+}
+
 /* Dashboard bars grow in from their baseline. */
 @keyframes bar-grow-y {
   from { transform: scaleY(0); }
@@ -252,19 +331,23 @@
 /* Dark theme: same token names, night-time values. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-brand: #8fb3e8;
-  --color-brand-deep: #0f1f35;
-  --color-on-brand: #0b1422;
-  --color-brand-700: #b3ccf0;
-  --color-brand-50: #16263c;
-  --color-brand-100: #1e3250;
-  --color-gold-600: #f4b942;
-  --color-gold-50: #2a2213;
-  --color-canvas: #0b1422;
-  --color-card: #111d2e;
+  --color-brand: #9db9e3;
+  --color-brand-deep: #0d1d33;
+  --color-on-brand: #0b1524;
+  --color-brand-700: #bcd0ee;
+  --color-brand-50: #15253c;
+  --color-brand-100: #1d3252;
+  --color-teal: #2ec4ad;
+  --color-teal-700: #5fd9c5;
+  --color-teal-50: #0f2e2d;
+  --color-gold-400: #ffc670;
+  --color-gold-600: #ffc670;
+  --color-gold-50: #2b2214;
+  --color-canvas: #0b1524;
+  --color-card: #122036;
   --color-ink: #e6edf7;
-  --color-muted: #94a3b8;
-  --color-line: #22314a;
+  --color-muted: #9aa9bd;
+  --color-line: #23344d;
   --color-success: #2cc486;
   --color-danger: #f06a6a;
 }

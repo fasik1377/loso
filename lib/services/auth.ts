@@ -7,7 +7,7 @@ import { normalizePhone } from "@/lib/phone";
 import { slugify } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
 import { audit } from "@/lib/audit";
-import type { Role } from "@/lib/generated/prisma";
+import { Prisma, type Role } from "@/lib/generated/prisma";
 import type { z } from "zod";
 import type { registerSchema } from "@/lib/validation/schemas";
 
@@ -42,7 +42,8 @@ export async function registerUser(data: RegisterData): Promise<{ userId: string
   const settings = await getSettings();
   const roles: Role[] = [data.accountType];
 
-  const user = await db.$transaction(async (tx) => {
+  const user = await db
+    .$transaction(async (tx) => {
     const u = await tx.user.create({
       data: {
         fullName: data.fullName,
@@ -87,9 +88,21 @@ export async function registerUser(data: RegisterData): Promise<{ userId: string
 
     await audit({ actorId: u.id, action: "user.register", entityType: "User", entityId: u.id, metadata: { accountType: data.accountType } }, tx);
     return u;
-  });
+  })
+    .catch((e: unknown) => {
+      // Two sign-ups racing for the same number: the unique index on User.phone is the final guard.
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+        throw new AppError("An account with this phone number already exists.", "CONFLICT");
+      }
+      throw e;
+    });
 
   return { userId: user.id };
+}
+
+/** True when a (normalized, E.164) phone number already belongs to an account. One phone = one account. */
+export async function isPhoneRegistered(phone: string): Promise<boolean> {
+  return (await db.user.count({ where: { phone } })) > 0;
 }
 
 /** Sign-in identifier → lookup: an email (has "@"), a phone number, or a username. */
@@ -104,7 +117,7 @@ function identifierWhere(identifier: string) {
 /** Returns the user id on success. Generic error messages avoid revealing which accounts exist. */
 export async function authenticate(identifier: string, password: string): Promise<string> {
   const user = await db.user.findFirst({ where: identifierWhere(identifier) });
-  const invalid = new AppError("Incorrect sign-in details or password.", "UNAUTHORIZED");
+  const invalid = new AppError("Incorrect phone number or password.", "UNAUTHORIZED");
 
   if (!user) {
     await verifyPassword(password, DUMMY_HASH); // equalize timing

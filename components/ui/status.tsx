@@ -52,7 +52,7 @@ export function StatusBadge({ status, label }: { status: string; label?: string 
 
 export function VerifiedBadge({ label = "Verified" }: { label?: string }) {
   return (
-    <Badge tone="success">
+    <Badge tone="teal">
       <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
       {label}
     </Badge>
@@ -78,7 +78,7 @@ export function Stars({ value }: { value: number }) {
   return (
     <span className="inline-flex" aria-label={`${value} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`h-4 w-4 ${i <= value ? "fill-gold text-gold" : "text-slate-300"}`} aria-hidden="true" />
+        <Star key={i} className={`h-4 w-4 ${i <= value ? "fill-gold text-gold" : "text-muted/40"}`} aria-hidden="true" />
       ))}
     </span>
   );

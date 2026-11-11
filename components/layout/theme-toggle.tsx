@@ -22,7 +22,7 @@ export interface ThemeLabels {
 }
 
 /** Light / Dark / System picker. The preference lives in localStorage (per device). */
-export function ThemeToggle({ labels, tone = "light" }: { labels: ThemeLabels; tone?: "light" | "dark" }) {
+export function ThemeToggle({ labels, tone = "light", openUp = false }: { labels: ThemeLabels; tone?: "light" | "dark"; openUp?: boolean }) {
   const [pref, setPref] = useState<ThemePreference>("system");
   const [resolved, setResolved] = useState<"light" | "dark">("light");
   const [open, setOpen] = useState(false);
@@ -103,7 +103,7 @@ export function ThemeToggle({ labels, tone = "light" }: { labels: ThemeLabels; t
         <CurrentIcon className="h-4 w-4 transition-transform duration-300" aria-hidden="true" key={resolved} />
       </button>
       {open && (
-        <div role="menu" aria-label={labels.label} className="absolute right-0 z-50 mt-2 w-40 animate-pop-in overflow-hidden rounded-xl border border-line bg-card p-1 shadow-xl">
+        <div role="menu" aria-label={labels.label} className={`absolute right-0 z-50 w-40 animate-pop-in ${openUp ? "bottom-full mb-2" : "mt-2"} overflow-hidden rounded-xl border border-line bg-card p-1 shadow-xl`}>
           {options.map(({ value, label, Icon }) => (
             <button
               key={value}

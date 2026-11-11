@@ -104,13 +104,13 @@ export function Sidebar({ groups }: { groups: NavGroup[] }) {
                     aria-current={isActive(item.href) ? "page" : undefined}
                     className={cx(
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      isActive(item.href) ? "bg-card/10 text-gold" : "text-white/85 hover:bg-card/5 hover:text-white",
+                      isActive(item.href) ? "bg-white/10 text-gold" : "text-white/85 hover:bg-white/5 hover:text-white",
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span className="flex-1">{item.label}</span>
                     {count > 0 && (
-                      <span className="rounded-full bg-gold px-2 text-xs font-bold text-brand" aria-label={`${count} unread`}>
+                      <span className="rounded-full bg-gold px-2 text-xs font-bold text-on-gold" aria-label={`${count} unread`}>
                         {count > 99 ? "99+" : count}
                       </span>
                     )}

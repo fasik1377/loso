@@ -42,7 +42,7 @@ export function HeroSearch({ locations, serviceCategories, jobCategories, t }: {
           <input
             name="q"
             placeholder={mode === "jobs" ? t.jobPlaceholder : t.servicePlaceholder}
-            className="h-12 w-full rounded-lg border border-line pl-10 pr-3 text-ink placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            className="h-12 w-full rounded-lg border border-line bg-card pl-10 pr-3 text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </label>
         <label className="relative block">

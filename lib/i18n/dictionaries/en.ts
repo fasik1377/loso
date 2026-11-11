@@ -16,7 +16,7 @@ export const en = {
     closeMenu: "Close menu",
   },
   footer: {
-    tagline: "Your Skills. Your Opportunities.",
+    tagline: "Every Skill Has Value.",
     supporting: "Connecting people, skills, and opportunities across Hawassa.",
     explore: "Explore",
     browseJobs: "Browse jobs",
@@ -33,12 +33,20 @@ export const en = {
     terms: "Terms of use",
     report: "Report a problem",
     location: "Hawassa, Sidama, Ethiopia",
+    support: "Support",
+    supportCenter: "Support center",
+    safetyTips: "Safety tips",
+    ctaTitle: "Ready to get started?",
+    ctaText: "Join Looso to find work or hire trusted local professionals in Hawassa.",
+    ctaJoin: "Create an account",
+    ctaSupport: "Get support",
+    rights: "All rights reserved.",
+    backToTop: "Back to top",
+    trust: ["Admin-approved accounts","Private phone numbers","Made for Hawassa"],
   },
   hero: {
     badge: "Hawassa's jobs & services marketplace",
-    titleLine1: "Find work.",
-    titleLine2: "Hire skill.",
-    titleLine3: "Grow Hawassa.",
+    motto: "Every Skill Has Value.",
     subtitle: "Verified people. Real jobs. One place.",
     photoGridLabel: "People at work in Hawassa: tradespeople, drivers, office staff and more",
     photos: {
@@ -156,11 +164,89 @@ export const en = {
     view: "View",
     close: "Close",
   },
+  support: {
+    "heading": "How can we help you?",
+    "intro": "Get quick answers, or send our team a message. We read every request.",
+    "topicsTitle": "Choose a topic",
+    "topics": [
+      {
+        "key": "account",
+        "title": "Account & approval",
+        "text": "Sign-up, admin approval and your account status."
+      },
+      {
+        "key": "payment",
+        "title": "Registration fee",
+        "text": "Paying the fee and submitting your payment reference."
+      },
+      {
+        "key": "verification",
+        "title": "Verification documents",
+        "text": "Uploading your ID or business documents."
+      },
+      {
+        "key": "jobs",
+        "title": "Jobs & applications",
+        "text": "Posting vacancies and applying for work."
+      },
+      {
+        "key": "services",
+        "title": "Services & requests",
+        "text": "Hiring a worker and managing service requests."
+      },
+      {
+        "key": "safety",
+        "title": "Safety & reporting",
+        "text": "Fraud, abuse and reporting a problem."
+      }
+    ],
+    "contactTitle": "Contact the support team",
+    "contactText": "Tell us what happened. Add your phone number so we can reply.",
+    "channelsTitle": "Other ways to reach us",
+    "phone": "Phone",
+    "email": "Email",
+    "noChannels": "Phone and email support will be published soon. Please use the form.",
+    "reply": "We reply as soon as we can.",
+    "faqTitle": "Quick answers",
+    "faq": [
+      {
+        "q": "I signed up. Why can't I use my account yet?",
+        "a": "Every new account is reviewed by an administrator. Your account status page shows what is left, for example paying the fee or uploading documents."
+      },
+      {
+        "q": "I forgot my password.",
+        "a": "Use “Forgot password” on the sign-in page with your phone number. If you still can't get in, contact support and staff will help you."
+      },
+      {
+        "q": "Can two people use the same phone number?",
+        "a": "No. Each phone number can be used for only one Looso account."
+      },
+      {
+        "q": "Does Looso take payment for services?",
+        "a": "No. You agree on the price directly with the worker. Looso staff will never ask for your password."
+      }
+    ],
+    "helpLink": "Help center",
+    "statusLink": "My account status",
+    "reportTitle": "Report something unsafe",
+    "reportText": "Use the “Report” link on any profile, job or message so moderators get the details.",
+    "reportButton": "Safety tips",
+    "form": {
+      "name": "Your name",
+      "contact": "Phone number or email",
+      "contactHint": "So we can reply to you.",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Send message",
+      "sending": "Sending…"
+    }
+  },
   auth: {
     signInTitle: "Sign in to Looso",
     newHere: "New here?",
     createAccount: "Create an account",
-    phoneOrEmail: "Phone, email or username",
+    phoneOrEmail: "Phone number",
+    phonePlaceholder: "09XX XXX XXX",
     password: "Password",
     forgot: "Forgot password?",
     signIn: "Sign in",
@@ -169,11 +255,11 @@ export const en = {
     verificationNote: "Every new account can be used once an administrator approves it.",
     welcomeBack: "Welcome back",
     loginSubtitle: "One sign-in for job seekers, customers, employers and administrators.",
-    identifierHint: "Use the phone number, email or username you registered with.",
+    identifierHint: "The mobile number you registered with, e.g. 0911 234 567.",
     showPassword: "Show password",
     hidePassword: "Hide password",
     capsLock: "Caps Lock is on",
-    panelTitle: "Your skills. Your opportunities.",
+    panelTitle: "Every Skill Has Value.",
     panelText: "Verified professionals, jobs and local services across Hawassa — in one place.",
     panelPoints: ["Every account is approved by an administrator","Your phone number stays private","Jobs and local services in one place"],
     approvalTitle: "How accounts are approved",

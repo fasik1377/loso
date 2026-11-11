@@ -13,8 +13,8 @@ export default function ForgotPasswordPage() {
       <Card className="mt-6">
         <CardBody>
           <ActionForm action={forgotPasswordAction}>
-            <Field label="Phone number or email" name="phoneOrEmail" required>
-              <Input name="phoneOrEmail" required autoComplete="username" />
+            <Field label="Phone number" name="phoneOrEmail" required hint="The mobile number you registered with.">
+              <Input name="phoneOrEmail" type="tel" inputMode="tel" placeholder="09XX XXX XXX" required autoComplete="username" />
             </Field>
             <SubmitButton className="w-full" pendingText="Please wait…">Request reset link</SubmitButton>
           </ActionForm>

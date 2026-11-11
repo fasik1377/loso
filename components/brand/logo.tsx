@@ -1,27 +1,47 @@
+import Image from "next/image";
 import Link from "next/link";
+import logoAmber from "@/public/images/brand/logo-amber.png";
+import logoNavy from "@/public/images/brand/logo-navy.png";
+
+const SIZES = {
+  sm: "h-9", // dashboard bar
+  md: "h-11 sm:h-12", // site header
+  lg: "h-14", // footer
+  xl: "h-20 sm:h-24", // sign-in page
+} as const;
 
 /**
- * Looso mark: a briefcase whose body carries a checkmark, i.e. "verified opportunity".
- * Pure SVG so it scales from favicon to footer without image assets.
+ * The Looso logo (from the brand files in /public/images, trimmed with a transparent background).
+ *  - tone "auto": for page-coloured surfaces. Navy in light theme, amber in dark theme.
+ *  - tone "light": for navy surfaces (hero, footer, sidebar). Always amber.
  */
-export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
+export function Logo({
+  href = "/",
+  tone = "auto",
+  size = "md",
+  className = "",
+  priority = false,
+}: {
+  href?: string | null;
+  tone?: "auto" | "light";
+  size?: keyof typeof SIZES;
+  className?: string;
+  priority?: boolean;
+}) {
+  const h = SIZES[size];
+  const img =
+    tone === "light" ? (
+      <Image src={logoAmber} alt="Looso" preload={priority} className={`${h} w-auto`} />
+    ) : (
+      <>
+        <Image src={logoNavy} alt="Looso" preload={priority} className={`${h} w-auto dark:hidden`} />
+        <Image src={logoAmber} alt="" aria-hidden="true" className={`${h} hidden w-auto dark:block`} />
+      </>
+    );
+  if (href === null) return <span className={`inline-flex items-center ${className}`}>{img}</span>;
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true" focusable="false">
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="#182B43" />
-      <path d="M12 9.5V8.2c0-.7.6-1.2 1.2-1.2h5.6c.7 0 1.2.5 1.2 1.2v1.3" fill="none" stroke="#F4B942" strokeWidth="2" strokeLinecap="round" />
-      <rect x="6.5" y="10" width="19" height="14" rx="2.5" fill="none" stroke="#FFFFFF" strokeWidth="2" />
-      <path d="M11.5 17l3 3 6-6" fill="none" stroke="#F4B942" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-export function Logo({ href = "/", tone = "dark", className = "" }: { href?: string; tone?: "dark" | "light"; className?: string }) {
-  return (
-    <Link href={href} className={`inline-flex items-center gap-2 ${className}`} aria-label="Looso home">
-      <LogoMark />
-      <span className={`text-xl font-bold tracking-tight ${tone === "dark" ? "text-brand" : "text-white"}`}>
-        Looso
-      </span>
+    <Link href={href} className={`inline-flex shrink-0 items-center ${className}`} aria-label="Looso home">
+      {img}
     </Link>
   );
 }

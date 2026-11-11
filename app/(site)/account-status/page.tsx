@@ -147,7 +147,7 @@ async function AccountStatusPageContent() {
 
 function Step({ n, title, state, children }: { n: number; title: string; state: "done" | "current" | "waiting" | "failed" | "todo"; children?: ReactNode }) {
   const Icon = state === "done" ? CheckCircle2 : state === "failed" ? XCircle : state === "todo" ? Circle : CircleDot;
-  const color = state === "done" ? "text-success" : state === "failed" ? "text-danger" : state === "todo" ? "text-slate-300" : "text-gold-600";
+  const color = state === "done" ? "text-success" : state === "failed" ? "text-danger" : state === "todo" ? "text-muted/40" : "text-gold-600";
   const label = { done: "Complete", current: "Action needed", waiting: "In review", failed: "Needs attention", todo: "Not started" }[state];
   return (
     <li>

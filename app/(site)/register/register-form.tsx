@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Briefcase, Building2, Loader2, User } from "lucide-react";
-import { registerAction } from "@/lib/actions/auth";
+import { Briefcase, Building2, CheckCircle2, Loader2, Smartphone, User, XCircle } from "lucide-react";
+import { checkPhoneAction, registerAction } from "@/lib/actions/auth";
 import { registerSchema, type RegisterInput } from "@/lib/validation/schemas";
 import { Alert, Button, cx } from "@/components/ui/primitives";
 import { Field, inputClass } from "@/components/ui/form";
@@ -14,7 +14,7 @@ type AccountType = RegisterInput["accountType"];
 
 const TYPES: { value: AccountType; title: string; text: string; icon: typeof User }[] = [
   { value: "WORKER", title: "Worker / Job seeker", text: "Find jobs or offer your services. Registration fee + admin verification required.", icon: Briefcase },
-  { value: "CUSTOMER", title: "Customer", text: "Find and hire skilled workers. Free.", icon: User },
+  { value: "CUSTOMER", title: "Customer", text: "Find and hire skilled workers. Free, admin approval required.", icon: User },
   { value: "EMPLOYER", title: "Employer / Company", text: "Post vacancies and recruit. Admin verification of your business required.", icon: Building2 },
 ];
 
@@ -33,8 +33,27 @@ export function RegisterForm({ initialType }: { initialType: AccountType }) {
     defaultValues: { accountType: initialType, seeksJobs: true, offersServices: false, employerType: "COMPANY" },
   });
   const type = watch("accountType");
+  const [phoneStatus, setPhoneStatus] = useState<"idle" | "checking" | "taken" | "available">("idle");
+  const phoneField = register("phone");
+
+  /** One phone number = one account: tell people right away if the number is already registered. */
+  async function checkPhone(value: string) {
+    if (!value.trim()) return setPhoneStatus("idle");
+    setPhoneStatus("checking");
+    const { status } = await checkPhoneAction(value);
+    if (status === "taken") {
+      setPhoneStatus("taken");
+      setError("phone", { message: "This phone number is already registered. Each phone number can have only one account." });
+    } else {
+      setPhoneStatus(status === "available" ? "available" : "idle");
+    }
+  }
 
   const onSubmit = handleSubmit((values) => {
+    if (phoneStatus === "taken") {
+      setError("phone", { message: "This phone number is already registered. Each phone number can have only one account." });
+      return;
+    }
     setServerError(null);
     startTransition(async () => {
       const res = await registerAction(values);
@@ -74,16 +93,48 @@ export function RegisterForm({ initialType }: { initialType: AccountType }) {
       </fieldset>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <Field label="Phone number (you sign in with this)" name="phone" required error={err("phone")} hint="Ethiopian mobile number, e.g. 0911 234 567. One phone number = one account.">
+            <div className="relative">
+              <Smartphone className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+              <input
+                id="phone"
+                type="tel"
+                autoComplete="tel"
+                inputMode="tel"
+                placeholder="09XX XXX XXX"
+                className={cx(inputClass, "h-12 pl-10 pr-10 text-base tracking-wide")}
+                aria-invalid={!!errors.phone}
+                {...phoneField}
+                onChange={(e) => {
+                  setPhoneStatus("idle");
+                  void phoneField.onChange(e);
+                }}
+                onBlur={(e) => {
+                  void phoneField.onBlur(e);
+                  void checkPhone(e.target.value);
+                }}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2" aria-live="polite">
+                {phoneStatus === "checking" && <Loader2 className="h-5 w-5 animate-spin text-muted" aria-label="Checking phone number" />}
+                {phoneStatus === "available" && <CheckCircle2 className="h-5 w-5 text-success" aria-label="Phone number is available" />}
+                {phoneStatus === "taken" && <XCircle className="h-5 w-5 text-danger" aria-label="Phone number already registered" />}
+              </span>
+            </div>
+          </Field>
+          {phoneStatus === "taken" && (
+            <p className="mt-1.5 text-sm text-muted">
+              Is this your number? <Link href="/login" className="font-semibold text-brand underline">Sign in</Link> or{" "}
+              <Link href="/forgot-password" className="font-semibold text-brand underline">reset your password</Link>.
+            </p>
+          )}
+        </div>
         <Field label="Full name" name="fullName" required error={err("fullName")}>
           <input id="fullName" autoComplete="name" className={inputClass} aria-invalid={!!errors.fullName} {...register("fullName")} />
-        </Field>
-        <Field label="Phone number" name="phone" required error={err("phone")} hint="Ethiopian number, e.g. 0911 234 567">
-          <input id="phone" type="tel" autoComplete="tel" inputMode="tel" className={inputClass} aria-invalid={!!errors.phone} {...register("phone")} />
         </Field>
         <Field label="Email (optional)" name="email" error={err("email")}>
           <input id="email" type="email" autoComplete="email" className={inputClass} aria-invalid={!!errors.email} {...register("email")} />
         </Field>
-        <div className="hidden sm:block" />
         <Field label="Password" name="password" required error={err("password")} hint="At least 8 characters with letters and numbers">
           <input id="password" type="password" autoComplete="new-password" className={inputClass} aria-invalid={!!errors.password} {...register("password")} />
         </Field>
@@ -96,8 +147,8 @@ export function RegisterForm({ initialType }: { initialType: AccountType }) {
         <fieldset className="rounded-lg border border-line p-4">
           <legend className="px-1 text-sm font-medium text-ink">What are you looking for?</legend>
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#182B43]" {...register("seeksJobs")} /> Find a job (apply to vacancies)</label>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#182B43]" {...register("offersServices")} /> Offer my services to customers</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-brand" {...register("seeksJobs")} /> Find a job (apply to vacancies)</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-brand" {...register("offersServices")} /> Offer my services to customers</label>
           </div>
           {err("offersServices") && <p className="mt-1 text-xs text-danger">{err("offersServices")}</p>}
           <p className="mt-3 text-xs text-muted">
@@ -127,7 +178,7 @@ export function RegisterForm({ initialType }: { initialType: AccountType }) {
       )}
 
       <label className="flex items-start gap-2 text-sm">
-        <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#182B43]" {...register("acceptTerms")} />
+        <input type="checkbox" className="mt-0.5 h-4 w-4 accent-brand" {...register("acceptTerms")} />
         <span>
           I agree to the <Link href="/terms" target="_blank" className="text-brand underline">terms of use</Link> and{" "}
           <Link href="/privacy" target="_blank" className="text-brand underline">privacy policy</Link>.

@@ -52,14 +52,14 @@ export function AnimatedBackdrop({
       <div
         className={cx(
           "absolute -right-[15%] top-[10%] h-[80%] w-[60%] rounded-full blur-3xl",
-          dark ? "bg-sky-400/20" : "bg-brand/10",
+          dark ? "bg-teal/25" : "bg-brand/10",
         )}
         style={{ animation: "aurora-b 26s ease-in-out infinite" }}
       />
       <div
         className={cx(
           "absolute -bottom-[35%] left-[25%] h-[70%] w-[50%] rounded-full blur-3xl",
-          dark ? "bg-emerald-400/15" : "bg-success/10",
+          dark ? "bg-sky-400/10" : "bg-teal/10",
         )}
         style={{ animation: "aurora-c 30s ease-in-out infinite" }}
       />
@@ -69,7 +69,7 @@ export function AnimatedBackdrop({
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(${dark ? "rgb(255 255 255 / 0.05)" : "rgb(24 43 67 / 0.05)"} 1px, transparent 1px), linear-gradient(90deg, ${dark ? "rgb(255 255 255 / 0.05)" : "rgb(24 43 67 / 0.05)"} 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(${dark ? "rgb(255 255 255 / 0.05)" : "rgb(20 43 74 / 0.05)"} 1px, transparent 1px), linear-gradient(90deg, ${dark ? "rgb(255 255 255 / 0.05)" : "rgb(20 43 74 / 0.05)"} 1px, transparent 1px)`,
             backgroundSize: "56px 56px",
             maskImage:
               "radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 75%)",
@@ -110,7 +110,7 @@ export function AnimatedBackdrop({
                 width: s.size,
                 height: s.size,
                 boxShadow: dark
-                  ? "0 0 10px 2px rgb(244 185 66 / 0.35)"
+                  ? "0 0 10px 2px rgb(255 181 71 / 0.35)"
                   : undefined,
                 animation: `spark-rise ${s.dur}s ease-in ${s.delay}s infinite both`,
                 "--dx": `${s.dx}px`,

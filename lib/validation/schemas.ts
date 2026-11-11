@@ -69,7 +69,7 @@ export const registerSchema = z
 export type RegisterInput = z.input<typeof registerSchema>;
 
 export const loginSchema = z.object({
-  phoneOrEmail: z.string().trim().min(3, "Enter your phone number or email").max(120),
+  phoneOrEmail: z.string().trim().min(3, "Enter your phone number").max(120),
   password: z.string().min(1, "Enter your password").max(128),
 });
 

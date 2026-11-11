@@ -37,7 +37,7 @@ export default async function MessagesPage({ searchParams }: PageProps<"/dashboa
                 {c.context && <p className="truncate text-xs text-brand">{c.context}</p>}
                 <p className="truncate text-sm text-muted">{c.last ? (c.last.hiddenAt ? "Message removed" : `${c.last.senderId === user.id ? "You: " : ""}${c.last.body}`) : "No messages yet"}</p>
               </div>
-              {c.unread > 0 && <span className="rounded-full bg-gold px-2 text-xs font-bold text-brand">{c.unread}</span>}
+              {c.unread > 0 && <span className="rounded-full bg-gold px-2 text-xs font-bold text-on-gold">{c.unread}</span>}
             </Link>
           ))}
         </Card>

@@ -14,8 +14,8 @@ async function Shell({ children }: { children: ReactNode }) {
   const [user, { t }] = await Promise.all([requireActivePage(), getDictionary()]);
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-card px-4 sm:px-6">
-        <Logo />
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-card px-4 sm:px-6">
+        <Logo size="sm" />
         <div className="flex items-center gap-3 text-sm">
           <Link href="/" className="hidden text-muted hover:text-ink sm:inline">Back to site</Link>
           <ThemeToggle labels={t.theme} />

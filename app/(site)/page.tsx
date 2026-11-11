@@ -35,6 +35,7 @@ import { SpotlightPopup, type SpotlightItem } from "@/components/marketplace/spo
 import { CategoryMarquee } from "@/components/marketplace/category-marquee";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
+import { AnimatedLogo } from "@/components/brand/animated-logo";
 import { AnimatedBackdrop } from "@/components/ui/animated-backdrop";
 
 async function HomePageContent() {
@@ -97,7 +98,7 @@ async function HomePageContent() {
     <>
       {/* Hero: full-bleed "stage" of real work, shutter transitions, one strong message */}
       <HeroStageProvider>
-        <section className="relative isolate flex min-h-[44rem] flex-col overflow-hidden bg-brand-deep lg:min-h-[calc(100svh-4rem)]">
+        <section className="relative isolate flex min-h-[44rem] flex-col overflow-hidden bg-brand-deep lg:min-h-[calc(100svh-4.5rem)]">
           <StagePhotos label={t.hero.photoGridLabel} />
           {/* Legibility: deep fade from the left (text side) and from the bottom (search). */}
           <div aria-hidden="true" className="absolute inset-0 bg-brand-deep/55 lg:bg-gradient-to-r lg:from-brand-deep lg:via-brand-deep/70 lg:to-brand-deep/0" />
@@ -114,22 +115,34 @@ async function HomePageContent() {
                   </span>
                   {t.hero.badge}
                 </p>
-                <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.95] tracking-tight text-white [text-shadow:0_4px_40px_rgb(0_0_0/0.35)] sm:text-7xl xl:text-8xl">
-                  {[t.hero.titleLine1, t.hero.titleLine2].map((line, i) => (
-                    <span key={i} className="block overflow-hidden pb-1">
-                      <span className="block" style={{ animation: `rise-in 0.9s cubic-bezier(0.2,0.8,0.2,1) ${150 + i * 140}ms both` }}>
-                        {line}
+                {/* The Looso logo, animated part by part (hand, streaks, tie, letters), then the motto. */}
+                <h1 className="mt-6">
+                  <span className="sr-only">Looso</span>
+                  <AnimatedLogo className="w-[19rem] sm:w-[28rem] xl:w-[34rem]" />
+                </h1>
+                {/* Motto: words rise in one by one, then float in a gentle wave while warm light ripples through them. */}
+                <p
+                  className="mt-4 flex flex-wrap gap-x-[0.3em] font-display text-2xl font-bold tracking-tight text-gold [filter:drop-shadow(0_4px_24px_rgb(0_0_0/0.45))] sm:text-4xl">
+                  <span className="sr-only">{t.hero.motto}</span>
+                  {t.hero.motto.split(" ").map((word, i) => (
+                    <span key={i} aria-hidden="true" className="-my-1 inline-block overflow-hidden py-1">
+                      <span
+                        className="inline-block bg-[linear-gradient(100deg,#FFB547_0%,#FFB547_40%,#FFF3DC_50%,#FFB547_60%,#FFB547_100%)] bg-[length:300%_100%] bg-[position:100%_0] bg-clip-text text-transparent"
+                        style={{
+                          animation: [
+                            `rise-in 0.8s cubic-bezier(0.2,0.8,0.2,1) ${1.2 + i * 0.14}s both`,
+                            `motto-float 3.2s ease-in-out ${2.6 + i * 0.18}s infinite`,
+                            `motto-shimmer 5s ease-in-out ${2.8 + i * 0.22}s infinite`,
+                          ].join(", "),
+                        }}
+                      >
+                        {word}
                       </span>
                     </span>
                   ))}
-                  <span className="block overflow-hidden pb-1">
-                    <span className="block text-gold" style={{ animation: "rise-in 0.9s cubic-bezier(0.2,0.8,0.2,1) 430ms both" }}>
-                      {t.hero.titleLine3}
-                    </span>
-                  </span>
-                </h1>
-                <p className="mt-5 max-w-md animate-fade-up text-lg text-white/75 [animation-delay:600ms]">{t.hero.subtitle}</p>
-                <div className="mt-8 flex animate-fade-up flex-wrap gap-3 [animation-delay:720ms]">
+                </p>
+                <p className="mt-4 max-w-md animate-fade-up text-lg text-white/75 [animation-delay:1.4s]">{t.hero.subtitle}</p>
+                <div className="mt-8 flex animate-fade-up flex-wrap gap-3 [animation-delay:1.5s]">
                   <ButtonLink href="/jobs" variant="gold" size="lg" className="group">
                     <Briefcase className="h-5 w-5" aria-hidden="true" /> {t.hero.ctaFindWork}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
@@ -333,7 +346,7 @@ async function HomePageContent() {
 function StatTile({ icon, value, label }: { icon: ReactNode; value: number; label: string }) {
   return (
     <div className="group flex items-center gap-3 bg-card px-5 py-5 transition-colors hover:bg-brand-50/60">
-      <span className="rounded-xl bg-brand-50 p-2.5 text-brand transition-transform group-hover:scale-110" aria-hidden="true">{icon}</span>
+      <span className="rounded-xl bg-teal-50 p-2.5 text-teal-700 transition-transform group-hover:scale-110" aria-hidden="true">{icon}</span>
       <div>
         <p className="text-2xl font-bold text-ink">
           <CountUp value={value} />
@@ -348,7 +361,7 @@ function SectionHeading({ eyebrow, title, subtitle, href, linkLabel }: { eyebrow
   return (
     <div className="mb-8 flex items-end justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-gold-600">{eyebrow}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-teal-700">{eyebrow}</p>
         <h2 className="mt-1 text-2xl font-bold text-ink sm:text-3xl">{title}</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p>
       </div>

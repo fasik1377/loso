@@ -37,7 +37,7 @@ export function MobileNav({
         {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
       {open && (
-        <div id="mobile-menu" className="absolute inset-x-0 top-16 animate-fade-up border-b border-line bg-card px-4 pb-4 shadow-lg">
+        <div id="mobile-menu" className="absolute inset-x-0 top-[4.5rem] animate-fade-up border-b border-line bg-card px-4 pb-4 shadow-lg">
           <nav aria-label="Mobile" className="flex flex-col py-2">
             {items.map((n) => (
               <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 font-medium text-ink hover:bg-brand-50">

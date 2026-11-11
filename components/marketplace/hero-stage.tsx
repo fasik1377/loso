@@ -173,7 +173,7 @@ export function StagePhotos({ label }: { label: string }) {
           >
             <SceneImage scene={prev} />
             {/* Gold seam along the split. */}
-            <span aria-hidden="true" className={cx("absolute inset-y-0 w-[3px] bg-gold shadow-[0_0_20px_6px_rgb(244_185_66/0.6)]", side === "left" ? "left-[calc(50%-3px)]" : "left-1/2")} />
+            <span aria-hidden="true" className={cx("absolute inset-y-0 w-[3px] bg-gold shadow-[0_0_20px_6px_rgb(255_181_71/0.6)]", side === "left" ? "left-[calc(50%-3px)]" : "left-1/2")} />
           </div>
         ))}
       </>
@@ -212,7 +212,7 @@ export function StagePhotos({ label }: { label: string }) {
               {/* Gold edge of light on the slice's leading side. */}
               <span
                 aria-hidden="true"
-                className={cx("absolute inset-x-0 h-[3px] bg-gold shadow-[0_0_18px_4px_rgb(244_185_66/0.55)]", fromBelow ? "top-0" : "bottom-0")}
+                className={cx("absolute inset-x-0 h-[3px] bg-gold shadow-[0_0_18px_4px_rgb(255_181_71/0.55)]", fromBelow ? "top-0" : "bottom-0")}
                 style={{ animation: `stage-flash 0.85s ease-out ${delay} both` }}
               />
             </div>
