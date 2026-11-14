@@ -164,6 +164,71 @@ export const en = {
     view: "View",
     close: "Close",
   },
+  howItWorks: {
+    "title": "How Looso works",
+    "intro": "From sign-up to finished work in a few clear steps. Every account is approved by an administrator, so everyone you meet on Looso has been checked.",
+    "approvalTitle": "Every account is approved first",
+    "approvalText": "After you sign up with your mobile number, a Looso administrator reviews your account. You can use Looso as soon as it is approved, and we notify you.",
+    "stepLabel": "Step",
+    "roles": [
+      {
+        "title": "Workers & job seekers",
+        "summary": "Find jobs and receive service requests.",
+        "steps": [
+          "Sign up with your mobile number and choose “Worker / Job seeker”.",
+          "Pay the registration fee and submit your payment reference.",
+          "Upload your ID. An administrator checks your payment and documents, then approves your account.",
+          "Complete your profile, apply for jobs and accept service requests.",
+          "Finish the work and earn reviews that bring you more work."
+        ],
+        "cta": "Register as a worker"
+      },
+      {
+        "title": "Customers",
+        "summary": "Hire trusted local professionals.",
+        "steps": [
+          "Sign up for free with your mobile number.",
+          "An administrator approves your account.",
+          "Search for a service or a worker near you.",
+          "Send a request and agree on the details in the chat.",
+          "Confirm when the work is done and leave a review."
+        ],
+        "cta": "Register as a customer"
+      },
+      {
+        "title": "Employers",
+        "summary": "Post vacancies and recruit.",
+        "steps": [
+          "Sign up with your mobile number and your company name.",
+          "Upload your business license for verification.",
+          "An administrator verifies your company and approves your account.",
+          "Publish vacancies, or ask us to sponsor them for more visibility.",
+          "Review applicants, shortlist them and chat inside Looso."
+        ],
+        "cta": "Register as an employer"
+      }
+    ],
+    "trustTitle": "Built for trust",
+    "trust": [
+      {
+        "title": "Admin-approved accounts",
+        "text": "Nobody can use Looso until an administrator has checked their account."
+      },
+      {
+        "title": "Private phone numbers",
+        "text": "You choose who can see your number. You can always chat inside Looso."
+      },
+      {
+        "title": "Honest reviews",
+        "text": "Only completed work can be reviewed, and only once per job."
+      }
+    ],
+    "questionsTitle": "Still have questions?",
+    "questionsText": "Our support team is here to help you.",
+    "supportButton": "Visit support",
+    "helpButton": "Help center",
+    "fullGuide": "See the full guide"
+  },
   support: {
     "heading": "How can we help you?",
     "intro": "Get quick answers, or send our team a message. We read every request.",

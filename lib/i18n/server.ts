@@ -3,8 +3,9 @@ import { cookies } from "next/headers";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from "./config";
 import { en, type Dictionary } from "./dictionaries/en";
 import { am } from "./dictionaries/am";
+import { sid } from "./dictionaries/sid";
 
-const DICTIONARIES: Record<Locale, Dictionary> = { en, am };
+const DICTIONARIES: Record<Locale, Dictionary> = { en, am, sid };
 
 /** The visitor's chosen language (cookie), falling back to English. */
 export async function getLocale(): Promise<Locale> {

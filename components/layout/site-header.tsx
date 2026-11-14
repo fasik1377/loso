@@ -17,7 +17,7 @@ async function HeaderContent() {
   const nav = [
     { href: "/jobs", label: t.nav.findJobs },
     { href: "/services", label: t.nav.findServices },
-    { href: "/#how-it-works", label: t.nav.howItWorks },
+    { href: "/how-it-works", label: t.nav.howItWorks },
     { href: "/help", label: t.nav.help },
   ];
   const unread = user?.status === "ACTIVE" ? await db.notification.count({ where: { userId: user.id, readAt: null } }) : 0;

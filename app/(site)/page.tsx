@@ -267,7 +267,7 @@ async function HomePageContent() {
       {/* How it works */}
       <section id="how-it-works" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-16 sm:px-6">
         <Reveal>
-          <SectionHeading eyebrow={h.howEyebrow} title={h.howTitle} subtitle={h.howSubtitle} />
+          <SectionHeading eyebrow={h.howEyebrow} title={h.howTitle} subtitle={h.howSubtitle} href="/how-it-works" linkLabel={t.howItWorks.fullGuide} />
         </Reveal>
         <div className="grid gap-6 md:grid-cols-2">
           <Reveal>
